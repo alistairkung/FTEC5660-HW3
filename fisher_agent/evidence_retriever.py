@@ -3,7 +3,7 @@
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 
-from fisher_agent.contracts import AnnualMargin, SQLEvidence, SQLTool
+from fisher_agent.margin_records import AnnualMargin, SQLEvidence, SQLTool
 from fisher_agent.point_rules import operating_margin_pct
 
 

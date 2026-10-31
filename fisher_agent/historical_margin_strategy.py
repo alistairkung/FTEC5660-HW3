@@ -1,6 +1,6 @@
 """Three positive annual margins and an FY2025 margin at least FY2023's."""
 
-from fisher_agent.contracts import MarginResult, SQLTool, StrategyError
+from fisher_agent.margin_records import MarginResult, SQLTool, StrategyError
 from fisher_agent.evidence_retriever import EvidenceError, EvidenceRetriever
 from fisher_agent.point_rules import historical_margin_passes
 

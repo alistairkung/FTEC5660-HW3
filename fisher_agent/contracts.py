@@ -1,70 +1,44 @@
-"""Typed Point 5 strategy boundary; operational errors have no verdict."""
-
+"""Minimal shared specialist boundary; evidence records remain specialist-owned."""
 from dataclasses import dataclass
-from decimal import Decimal
-from typing import Literal, Protocol
+from typing import Literal
 
-
-class SQLTool(Protocol):
-    def invoke(self, input: dict[str, str]) -> str: ...
+Verdict = Literal['PASS', 'FAIL']
 
 
 @dataclass(frozen=True)
-class SQLEvidence:
+class ProvenanceReference:
     evidence_id: str
     company_id: str
-    query: str
-    raw_result: str | None
-    columns: tuple[str, ...] = ()
-    rows: tuple[tuple[str, ...], ...] = ()
-    source_tool: Literal['sql_query'] = 'sql_query'
+    source_tool: str
 
 
 @dataclass(frozen=True)
-class AnnualMargin:
-    year: int
-    revenue: Decimal
-    operating_costs: Decimal
-    margin_pct: Decimal
-    evidence_id: str
-
-
-@dataclass(frozen=True)
-class StrategyError:
+class Diagnostic:
+    stage: str
     code: str
-    message: str
+    error_type: str | None = None
 
 
 @dataclass(frozen=True)
-class MarginResult:
+class PointResult:
     company_id: str
-    strategy: str
-    status: Literal['complete', 'error']
-    verdict: Literal['PASS', 'FAIL'] | None
+    point: int
+    verdict: Verdict | None
+    status: Literal['complete', 'error', 'insufficient_evidence', 'pending']
     summary: str
-    evidence: tuple[SQLEvidence, ...] = ()
-    margins: tuple[AnnualMargin, ...] = ()
-    industry_median_pct: Decimal | None = None
-    error: StrategyError | None = None
+    provenance: tuple[ProvenanceReference, ...] = ()
+    diagnostics: tuple[Diagnostic, ...] = ()
 
     def __post_init__(self) -> None:
+        if not self.company_id or not 1 <= self.point <= 15 or not self.summary.strip():
+            raise ValueError('Company, Fisher point and summary are required')
         if self.status == 'complete':
-            if self.verdict not in ('PASS', 'FAIL') or self.error is not None:
-                raise ValueError('A completed result needs a verdict and no error')
-            if not self.evidence or not self.margins:
-                raise ValueError('A completed result needs evidence and derived margins')
-            references = {item.evidence_id for item in self.evidence}
-            if len(references) != len(self.evidence) or any(
-                item.company_id != self.company_id for item in self.evidence
-            ):
-                raise ValueError('Evidence IDs must be unique and belong to this company')
-            if any(margin.evidence_id not in references for margin in self.margins):
-                raise ValueError('Derived margins must reference supplied SQL evidence')
-        elif self.status != 'error' or self.verdict is not None or self.error is None:
-            raise ValueError('An error result needs an error and no verdict')
-
-
-class MarginStrategy(Protocol):
-    name: str
-
-    def evaluate(self, company_id: str, sql_query: SQLTool) -> MarginResult: ...
+            if self.verdict not in ('PASS', 'FAIL') or not self.provenance:
+                raise ValueError('A completed result needs a verdict and provenance')
+        elif self.status not in ('error', 'insufficient_evidence', 'pending') or self.verdict is not None:
+            raise ValueError('An unresolved result must have no investment verdict')
+        ids = [item.evidence_id for item in self.provenance]
+        if len(ids) != len(set(ids)) or any(
+            item.company_id != self.company_id for item in self.provenance
+        ):
+            raise ValueError('Provenance must be unique and company-scoped')

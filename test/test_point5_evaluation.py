@@ -40,7 +40,7 @@ class Point5EvaluationTests(unittest.TestCase):
 
     def test_runtime_package_has_no_label_or_evaluation_dependencies(self):
         runtime = Path(__file__).resolve().parents[1] / 'fisher_agent'
-        margin_modules = {'contracts.py', 'evidence_retriever.py', 'point_rules.py',
+        margin_modules = {'margin_records.py', 'evidence_retriever.py', 'point_rules.py',
                           'historical_margin_strategy.py', 'industry_margin_strategy.py'}
         self.assertTrue(all((runtime / name).is_file() for name in margin_modules))
         for path in runtime.glob('*.py'):

@@ -1,6 +1,6 @@
 """FY2025 margin compared with the company's own industry median."""
 
-from fisher_agent.contracts import MarginResult, SQLTool, StrategyError
+from fisher_agent.margin_records import MarginResult, SQLTool, StrategyError
 from fisher_agent.evidence_retriever import EvidenceError, EvidenceRetriever
 from fisher_agent.point_rules import industry_margin_passes
 
