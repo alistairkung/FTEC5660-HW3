@@ -1,0 +1,3 @@
+# Optional SDK; native LangChain 1.x callbacks are included.
+-r requirements.txt
+langfuse==5.1.0
