@@ -112,8 +112,18 @@ A local `cl100k_base` approximation found 12-claim sample outputs of 1,383–1,4
 tokens and 21–26-event responses of 1,199–1,425 tokens. Full verification inputs
 were approximately 16,105–16,455 tokens, extraction inputs 1,599–1,626. These are
 examples, not DeepSeek tokenizer measurements or worst-case guarantees. The
-3,500-token output allowance is unchanged. The separately authorized live gate is
-evidence-focused; no new 20-company Option C accuracy baseline has been run.
+3,500-token output allowance is unchanged.
+
+The first evidence-focused live gate at `7950f3c` **failed** claim extraction after
+two calls: 3,908 input + 3,046 output = 6,954 tokens, 10.9187 seconds, zero supported
+finals, one operational failure, zero semantic abstentions and zero fallback credit.
+Both responses were valid 12-claim JSON, but four revenue definitions lacked quoted
+definition wording and three qualitative claims put "negligible"/"low" in the numeric
+value field. Verification was never reached. The remaining four companies were
+cancelled; no 20-company Option C evaluation ran. The recommendation is **ADJUST
+the normalizer and finite recovery feedback**, without adding calls or weakening
+source validation. No live semantic improvement has been demonstrated. See the
+[gate diagnosis](../evaluation/point14-option-c-gate.md); application code remains frozen.
 
 ## Historical baselines and integration boundary
 
