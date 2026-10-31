@@ -5,7 +5,7 @@ from dataclasses import asdict
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from .contracts import InterviewEvidence, SalesAssessment, SalesResult
+from .sales_records import InterviewEvidence, SalesAssessment, SalesResult
 from .result_validator import InvalidAssessment, validate_assessment
 
 

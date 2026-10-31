@@ -1,5 +1,5 @@
 """Deterministic schema and quote checks; source membership is not entailment."""
-from .contracts import InterviewEvidence, SalesAssessment
+from .sales_records import InterviewEvidence, SalesAssessment
 
 
 class InvalidAssessment(ValueError):

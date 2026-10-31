@@ -1,7 +1,7 @@
 """Deterministic provenance validation; semantics remain the model's responsibility."""
 import unittest
 
-from fisher_agent.contracts import InterviewEvidence
+from fisher_agent.sales_records import InterviewEvidence
 from fisher_agent.result_validator import InvalidAssessment, validate_assessment
 
 

@@ -10,7 +10,7 @@ from langchain_core.tools import BaseTool
 
 from observability.tracing import Observation, Tracing
 
-from .contracts import InterviewEvidence, ResultStatus, SalesAssessment, SalesResult
+from .sales_records import InterviewEvidence, ResultStatus, SalesAssessment, SalesResult
 from .evidence_interpreter import EvidenceInterpreter, PROMPT_VERSION
 from .result_validator import InvalidAssessment
 

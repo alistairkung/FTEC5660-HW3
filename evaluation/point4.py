@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 import hw3
-from fisher_agent.contracts import SalesResult
+from fisher_agent.sales_records import SalesResult
 from fisher_agent.evidence_interpreter import PROMPT_VERSION
 from fisher_agent.runtime import build_sales_specialist
 from observability import Tracing
