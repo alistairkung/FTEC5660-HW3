@@ -170,6 +170,140 @@ for each public company. Grading uses a private set of about 20 unseen
 companies with the same tools and the same answer key rules, but different
 names and wording, and scores your 3 points only.
 
+## Optional Langfuse tracing
+
+Tracing is independent of the analysis implementation. `hw3.py`, its tools,
+runner and grading functions are unchanged. The current starter makes no model
+calls: the wrapper below records the run; future student components must pass
+the reusable callback config to record their model/tool calls.
+
+Normal homework execution needs only `DEEPSEEK_API_KEY`. Without Langfuse keys,
+or if its optional SDK cannot initialize, tracing becomes a no-op. SDK callback
+and export failures must not change company verdicts or stop the batch.
+
+### Configuration
+
+Use Python 3.11+ for the optional integration. Install the required homework
+dependencies normally; add the optional SDK only when tracing is wanted:
+
+```bash
+pip install -r requirements-observability.txt
+```
+
+This pins Langfuse Python SDK **5.1.0**, using its native LangChain 1.x callback
+integration. For self-hosting, SDK v5 requires Langfuse server v4.59.0 or later.
+See the [SDK compatibility documentation](https://langfuse.com/docs/observability/sdk/overview).
+
+Copy `.env.example` to `.env` if you do not already have one, then fill values
+locally. Do not overwrite an existing `.env`. Set `DEEPSEEK_API_KEY`; optionally
+add `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` and `LANGFUSE_BASE_URL` for your
+Langfuse project. Use the matching regional URL, such as
+`https://cloud.langfuse.com` (EU) or `https://us.cloud.langfuse.com` (US).
+Keys are in your Langfuse project's Settings → API Keys. Do not paste or commit
+them. `.env` and `.env.*` are ignored, except the blank `.env.example` template.
+
+`LANGFUSE_TRACING_ENABLED=false` explicitly disables tracing even with keys.
+`LANGFUSE_TRACING_ENVIRONMENT` labels the environment; `LANGFUSE_TIMEOUT`
+sets the SDK request timeout in seconds (default 5). Configuration is read only
+after environment loading; imports alone do not initialize the SDK.
+
+### Runtime and component integration
+
+Use this optional launcher once analysis has been implemented and points chosen:
+
+```bash
+python -m observability.run --data-folder public_test
+```
+
+It loads `.env`, owns one tracing lifecycle, calls the unchanged `hw3.main()`,
+ends the root observation, then flushes and shuts down once. Exceptions and
+exit status are preserved. SDK flush/shutdown errors are best effort; they are
+not evidence of successful remote delivery. Wait for all company tasks and
+observations to finish before closing. Do not create/close a separate SDK client
+for each company: SDK resources are shared by project key.
+
+Future student integration can inject `current_tracing()` into its components.
+It returns the launcher's `Tracing` instance, or `None` under the original
+`python hw3.py` launcher. The architecture task can wire this without changing
+the observability module. For example, inside a component with an injected
+`tracing` value and an existing LangChain model/chain:
+
+```python
+config = tracing.config(
+    company_id=company_name, fisher_point=point_number,
+    run_name="interpret-company-evidence",
+) if tracing is not None else {}
+response = await chain.ainvoke(payload, config=config)
+```
+
+The config includes company/point identifiers when supplied and the assignment
+tag. Native callbacks capture the model name, inputs/outputs, latency, available
+provider token usage and errors. Attach once at the outer LangChain invocation;
+callbacks propagate to descendants. Reuse the company/point config without
+attaching the same handler twice. Omit `fisher_point` for work spanning points.
+Trace metadata uses string identifiers; point metadata is not a point selection.
+
+Directly invoked supplied LangChain tools support the same config:
+`tool.invoke(arguments, config=config)` or `await tool.ainvoke(arguments, config=config)`.
+Their implementation and counters remain untouched. For a direct call that does
+not support callbacks, use an explicit observation instead:
+
+```python
+with tracing.observation("retrieve-evidence", as_type="tool",
+                         company_id=company_name, fisher_point=point_number,
+                         input=arguments) as span:
+    result = direct_call(arguments)
+    span.update(output=result)
+```
+
+Use ordinary `with` inside async code too. Context follows async tasks. Do not
+combine manual tool spans and native tool callbacks for the same call. Use an
+outer company observation and nested point observations when grouping several
+independent calls; these can contain native LangChain generations. Manual spans
+record exception types and re-raise errors/cancellation. Native callbacks also
+record error details, prompts and evidence: keep credentials and configuration
+objects out of those payloads. The wrapper never sends environment variables.
+
+### Tests and trace verification
+
+```bash
+python -m unittest discover -s test -v
+```
+
+Offline tests use mocks at the Langfuse/model boundary and real LangChain
+execution to check callback events, usage forwarding, metadata isolation, direct
+tools, errors and lifecycle behaviour. They require the normal homework
+dependencies, not the optional SDK or credentials. The live test is skipped.
+
+An optional smoke makes **one paid DeepSeek call**, runs a synthetic tool and
+an intentional failing tool, then flushes. It performs no company analysis and
+does not select points. After setting keys in `.env`, run:
+
+```bash
+LANGFUSE_LIVE_SMOKE=true python -m observability.smoke --live
+```
+
+Alternatively, run only the live unittest with the same opt-in:
+`LANGFUSE_LIVE_SMOKE=true python -m unittest discover -s test -p test_tracing_smoke.py -v`.
+Do not run both unless you want two paid calls. The test's opt-in must be in the
+shell environment; keys may be in `.env`.
+
+The smoke prints its trace ID. In your project's Tracing view, find that ID
+(allow for asynchronous ingestion). Verify:
+
+- Root name `hw3-observability-smoke`, assignment tag and `company_id=observability-smoke`.
+- `fisher_point=1` is synthetic smoke metadata, not a homework choice.
+- A child generation with `deepseek-v4-flash`, input/output, latency and nonzero token usage.
+- The successful synthetic tool, the intentional tool error, and a distinct manually instrumented tool.
+- One nested tree with correctly closed observations and no duplicate spans for the same tool call.
+
+A printed ID or passing offline test does not prove ingestion. If nothing appears,
+check region, keys, enabled flag and SDK logs; repeat the smoke only after fixing
+configuration. Compare the trace with Langfuse's
+[best practices](https://langfuse.com/docs/observability/best-practices) and
+[LangChain integration](https://langfuse.com/integrations/frameworks/langchain).
+This integration follows the [Langfuse AI skill](https://github.com/langfuse/skills/tree/main/skills/langfuse).
+
 ## Homework 3 solution:
 > to students: this is your report, see the homework description.
 
