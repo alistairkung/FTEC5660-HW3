@@ -9,5 +9,6 @@ from .transparency_specialist import TransparencySpecialist
 
 def build_transparency_specialist(tracing: Tracing | None = None) -> TransparencySpecialist:
     model = ChatDeepSeek(model=MODEL_NAME, temperature=0, timeout=MODEL_TIMEOUT_SECONDS,
-                         max_retries=0, max_tokens=3500)
+                         max_retries=0, max_tokens=3500,
+                         extra_body={'thinking': {'type': 'disabled'}})
     return TransparencySpecialist(model, tracing)

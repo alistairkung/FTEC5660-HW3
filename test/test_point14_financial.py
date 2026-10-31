@@ -7,12 +7,12 @@ from fisher_agent.point14.financial_evidence_extractor import FinancialEvidenceE
 @tool
 def financial_sql(query: str) -> str:
     """Return independently worked quarterly totals in USD thousands."""
-    header = 'quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs'
+    header = 'quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs'
     rows = []
     revenues = [80, 100, 120, 160, 200, 180, 150, 100, 100, 90]
     for i, revenue in enumerate(revenues):
         quarter = f'{2024 + i // 4}Q{i % 4 + 1}'
-        rows.append(f'{quarter} | {revenue} | 3 | 40 | 10 | 10 | 3 | 10 | 10 | 3')
+        rows.append(f'{quarter} | {revenue} | 3 | 40 | 10 | 10 | 3 | 10 | 10 | 3 | 3')
     return header + '\n' + '\n'.join(rows)
 
 
@@ -65,7 +65,7 @@ class FinancialTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(metric.percentage_change)
         self.assertEqual(metric.comparison_status, 'zero_denominator')
 
-    async def test_sql_aggregates_real_synthetic_orders_without_join_multiplication(self):
+    def synthetic_database(self, *, duplicate_invalid_cost=False):
         import sqlite3
         from contextlib import closing
         from langchain_core.tools import tool
@@ -84,13 +84,23 @@ class FinancialTests(unittest.IsolatedAsyncioTestCase):
                                        [(f'{year}-{month:02}-01', 120), (f'{year}-{month:02}-15', 80)])
                         db.execute('INSERT INTO monthly_costs VALUES (?, 40, 10, 10)',
                                    (f'{year}-{month:02}',))
+                if duplicate_invalid_cost:
+                    db.execute("INSERT INTO monthly_costs VALUES ('2025-07', 9999, NULL, 1000)")
                 cursor = db.execute(query)
                 return '\n'.join([' | '.join(c[0] for c in cursor.description)] +
                                  [' | '.join(str(v) for v in row) for row in cursor.fetchall()])
+        return synthetic_database
 
-        snapshot = await FinancialEvidenceExtractor().extract('synthetic', synthetic_database)
+    async def test_sql_aggregates_real_synthetic_orders_without_join_multiplication(self):
+        snapshot = await FinancialEvidenceExtractor().extract('synthetic', self.synthetic_database())
         metrics = {m.evidence_id:m for m in snapshot.metrics}
         self.assertEqual(metrics['2025Q3:revenue:level'].value, 600)
         self.assertEqual(metrics['2025Q3:operating_profit:level'].value, 420)
         self.assertEqual(metrics['2025Q3:operating_margin_pct:level'].value, 70)
         self.assertEqual(metrics['2026Q1:revenue:qoq'].comparison_period, '2025Q4')
+
+    async def test_rejects_extra_invalid_cost_row_even_when_three_months_are_valid(self):
+        # Previously accepted: costs became 10,119 and profit became -10,579.
+        with self.assertRaises(ValueError):
+            await FinancialEvidenceExtractor().extract(
+                'synthetic', self.synthetic_database(duplicate_invalid_cost=True))

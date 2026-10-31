@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 import unittest
 from unittest.mock import AsyncMock
 from langchain_core.messages import AIMessage
@@ -68,6 +69,29 @@ class VerifierTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.assessment, 'TRANSPARENT')
         self.assertEqual(model.ainvoke.call_count, 2)
         self.assertEqual(diagnostics.adjudications, 1)
+
+    async def test_final_transparent_cannot_keep_material_unverifiable_findings(self):
+        initial = judgement('UNCERTAIN')
+        initial['comparisons'][0] = finding('2025Q3', 'UNVERIFIABLE', True,
+                                            ['claim:2025Q3:1'], 'AMBIGUOUS_EVIDENCE')
+        unresolved = {**initial, 'assessment': 'TRANSPARENT'}
+        with self.assertRaises(ValueError):
+            await self.run_verifier([initial, unresolved, unresolved], adjudicate=True)
+
+    async def test_payload_provides_decimal_million_equivalents_without_changing_sources(self):
+        snapshot = await FinancialEvidenceExtractor().extract('x', financial_sql)
+        payload = TransparencyVerifier(None).payload(snapshot, (), ())
+        revenue = next(m for m in payload['financial_metrics']
+                       if m['evidence_id'] == '2025Q3:revenue:qoq')
+        self.assertEqual(revenue['USD_millions']['value'], Decimal('0.15'))
+        self.assertEqual(revenue['USD_millions']['comparison_value'], Decimal('0.18'))
+        self.assertEqual(revenue['USD_millions']['absolute_change'], Decimal('-0.03'))
+        self.assertEqual(revenue['USD_millions']['value_rounded_1dp'], Decimal('0.2'))
+        self.assertEqual(revenue['value'], 150)
+        margin = next(m for m in payload['financial_metrics']
+                      if m['evidence_id'] == '2025Q3:operating_margin_pct:qoq')
+        self.assertNotIn('USD_millions', margin)
+        self.assertEqual(snapshot.metrics[0].value, 150)
 
     async def test_rejects_unsupported_metrics_numbers_cross_quarter_and_inconsistent_verdicts(self):
         proposals = []

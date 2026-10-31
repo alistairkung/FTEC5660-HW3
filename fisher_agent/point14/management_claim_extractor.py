@@ -37,14 +37,33 @@ from EVERY document, including favourable quarters. Never assess honesty or tran
 
 
 def source_quotation(candidate: str, transcript: str) -> str | None:
-    """Match a contiguous substring, allowing whitespace differences only."""
+    """Match original wording wholly inside one identified management speaker turn."""
+    if not candidate.strip():
+        return None
+    # Names come from the transcript's titled executive introductions, never a
+    # company/name list. Later turns can use those introduced names without titles.
+    turns = list(re.finditer(r'^[ \t]*([^\n:]+):[ \t]*', transcript, flags=re.MULTILINE))
+    headings = [match.start() for match in re.finditer(
+        r'^[ \t]*#{1,6}(?=[ \t]|$)', transcript, flags=re.MULTILINE)]
+    management = {'ceo', 'cfo'}
+    for turn in turns:
+        label = turn.group(1).strip()
+        if label.startswith('#'):
+            continue
+        introduction = re.fullmatch(r'(.+?)\s*\((Chief Executive(?: Officer)?|Chief Financial Officer)\)',
+                                    label, flags=re.IGNORECASE)
+        if introduction:
+            management.update((label.casefold(), introduction.group(1).strip().casefold()))
     parts = re.split(r'\s+', candidate.strip())
-    for match in re.finditer(r'\s+'.join(re.escape(part) for part in parts), transcript):
-        # The supplied calls use paragraph-separated, labelled speaker turns.
-        separator = transcript.rfind('\n\n', 0, match.start())
-        start = separator + 2 if separator >= 0 else 0
-        turn = transcript[start:match.end()].lstrip()
-        if not re.match(r'Analyst\s*:', turn, flags=re.IGNORECASE):
+    pattern = r'\s+'.join(re.escape(part) for part in parts)
+    for index, turn in enumerate(turns):
+        if turn.group(1).strip().casefold() not in management:
+            continue
+        end = turns[index + 1].start() if index + 1 < len(turns) else len(transcript)
+        # A document section ends speaker ownership until another labelled turn.
+        end = min([end, *(start for start in headings if turn.start() < start < end)])
+        match = re.search(pattern, transcript[turn.start():end])
+        if match and turn.start() + match.end() > turn.end():
             return match.group(0)
     return None
 

@@ -1,5 +1,6 @@
 """Semantic comparisons with deterministic source and decision consistency checks."""
 from dataclasses import asdict
+from decimal import Decimal, ROUND_HALF_EVEN
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -98,14 +99,26 @@ class TransparencyVerifier:
             raise EvidenceError('Verification omitted a reporting quarter')
         if proposal.assessment == 'EVASIVE' and not evasion:
             raise EvidenceError('Evasive verdict lacks material conflicting or omitted evidence')
-        if proposal.assessment == 'TRANSPARENT' and (evasion or (ambiguity and not final)):
+        if proposal.assessment == 'TRANSPARENT' and (evasion or ambiguity):
             raise EvidenceError('Transparent verdict conflicts with unresolved findings')
         if final and proposal.assessment == 'UNCERTAIN':
             raise EvidenceError('Final adjudication must resolve semantic uncertainty')
         return proposal
 
     def payload(self, financial, claims, transcripts):
-        return {'financial_metrics': [asdict(metric) for metric in financial.metrics],
+        metrics = []
+        for metric in financial.metrics:
+            item = asdict(metric)
+            if metric.unit == 'USD_thousands':
+                equivalent = {key: (item[key] / Decimal(1000) if item[key] is not None else None)
+                              for key in ('value', 'comparison_value', 'absolute_change')}
+                # Retrieved calls report monetary levels to one decimal million.
+                # This is a presentation equivalent, never a comparison tolerance.
+                equivalent['value_rounded_1dp'] = equivalent['value'].quantize(
+                    Decimal('0.1'), rounding=ROUND_HALF_EVEN)
+                item['USD_millions'] = equivalent
+            metrics.append(item)
+        return {'financial_metrics': metrics,
                 'management_claims': [asdict(claim) for claim in claims],
                 'full_transcripts': [{'period': doc.period, 'document': doc.name, 'text': doc.source.raw}
                                      for doc in transcripts]}

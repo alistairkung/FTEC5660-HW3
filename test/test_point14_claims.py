@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import AsyncMock
 from langchain_core.messages import AIMessage
 
-from fisher_agent.point14.management_claim_extractor import ManagementClaimExtractor
+from fisher_agent.point14.management_claim_extractor import ManagementClaimExtractor, source_quotation
 from fisher_agent.point14.model_gateway import ModelGateway
 from fisher_agent.point14.records import Diagnostics, Source, Transcript
 
@@ -67,3 +67,42 @@ class ClaimTests(unittest.IsolatedAsyncioTestCase):
         fake.ainvoke.return_value = AIMessage(content=json.dumps(self.proposal(quotation='Did revenue decline?')))
         with self.assertRaises(ValueError):
             await ManagementClaimExtractor(ModelGateway(fake, Diagnostics())).extract((transcript,))
+
+    async def test_rejects_whitespace_only_quotation_in_extraction(self):
+        with self.assertRaises(ValueError):
+            await self.extract([self.proposal(quotation='        ')] * 2)
+
+    def test_quotation_must_belong_wholly_to_one_management_turn(self):
+        transcript = ('# Earnings call\n\nDate: 2026-01-01\n\n'
+                      'Alex Ng (Chief Executive): Revenue declined.\nWe explained the shortfall.\n\n'
+                      'Analyst: Why did demand fall?\n'
+                      'Alex Ng: We discussed customer losses.\n\n'
+                      'Morgan Lee (Chief Financial Officer): Costs rose.')
+        for quotation in ('# Earnings call', 'Date: 2026-01-01',
+                          'Revenue declined.\nWe explained the shortfall.\n\nAnalyst: Why did demand fall?',
+                          'Why did demand fall?',
+                          'We discussed customer losses.\n\nMorgan Lee (Chief Financial Officer): Costs rose.'):
+            with self.subTest(quotation=quotation):
+                self.assertIsNone(source_quotation(quotation, transcript))
+        for quotation in ('Revenue declined.', 'We explained the shortfall.',
+                          'We discussed customer losses.', 'Costs rose.',
+                          'Alex Ng (Chief Executive): Revenue declined.'):
+            with self.subTest(quotation=quotation):
+                self.assertEqual(source_quotation(quotation, transcript), quotation)
+
+    def test_untitled_unknown_speaker_is_not_management_evidence(self):
+        self.assertIsNone(source_quotation('Revenue declined.', 'Unknown Person: Revenue declined.'))
+
+    def test_executive_title_in_heading_does_not_establish_management_speech(self):
+        self.assertIsNone(source_quotation('Revenue declined.',
+                                           '# Alex Ng (Chief Executive): Revenue declined.'))
+
+    def test_heading_after_management_turn_ends_speech_provenance(self):
+        transcript = ('CEO: Revenue declined.\n\n# Subheading\n\nUnattributed text.\n\n'
+                      'CFO: We explained higher costs.')
+        for quotation in ('# Subheading', 'Subheading', 'Unattributed text.',
+                          'Revenue declined.\n\n# Subheading'):
+            with self.subTest(quotation=quotation):
+                self.assertIsNone(source_quotation(quotation, transcript))
+        for quotation in ('Revenue declined.', 'We explained higher costs.'):
+            self.assertEqual(source_quotation(quotation, transcript), quotation)

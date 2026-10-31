@@ -18,6 +18,7 @@ WITH r AS (
  SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter,
  SUM(cost_of_sales) AS cost_of_sales, SUM(selling_admin) AS selling_admin,
  SUM(research_development) AS research_development, COUNT(DISTINCT month) AS cost_months,
+ COUNT(*) AS total_costs,
  SUM(CASE WHEN typeof(cost_of_sales) IN ('integer','real')
  AND typeof(selling_admin) IN ('integer','real')
  AND typeof(research_development) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_costs
@@ -25,11 +26,11 @@ WITH r AS (
  GROUP BY quarter
 )
 SELECT r.quarter, revenue, order_months, cost_of_sales, selling_admin,
- research_development, cost_months, valid_orders, total_orders, valid_costs
+ research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs
 FROM r LEFT JOIN c ON r.quarter=c.quarter ORDER BY r.quarter
 """.strip()
 COLUMNS = ('quarter', 'revenue', 'order_months', 'cost_of_sales', 'selling_admin',
-           'research_development', 'cost_months', 'valid_orders', 'total_orders', 'valid_costs')
+           'research_development', 'cost_months', 'valid_orders', 'total_orders', 'valid_costs', 'total_costs')
 
 
 def decode_sql(raw: object) -> list[dict[str, str]]:
@@ -76,7 +77,7 @@ class FinancialEvidenceExtractor:
             if period not in expected or period in quarterly:
                 raise EvidenceError('Unexpected or duplicate financial period')
             values = {key: number(value) for key, value in row.items() if key != 'quarter'}
-            if any(values[key] != 3 for key in ('order_months', 'cost_months', 'valid_costs')):
+            if any(values[key] != 3 for key in ('order_months', 'cost_months', 'valid_costs', 'total_costs')):
                 raise EvidenceError('Incomplete quarter or invalid monthly costs')
             if values['total_orders'] <= 0 or values['valid_orders'] != values['total_orders']:
                 raise EvidenceError('Missing or invalid orders')
