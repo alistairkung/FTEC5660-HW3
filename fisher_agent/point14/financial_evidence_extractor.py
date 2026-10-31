@@ -2,7 +2,7 @@
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
-from .records import EvidenceError, FinancialMetric, FinancialSnapshot, PERIODS, Source
+from .records import EvidenceError, FinancialMetric, FinancialSnapshot, PERIODS, QuarterlyReturns, Source
 
 # Ten quarters supply previous-quarter and previous-year comparators for all calls.
 # Aggregate each table separately to avoid multiplying orders by monthly costs.
@@ -24,13 +24,28 @@ WITH r AS (
  AND typeof(research_development) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_costs
  FROM monthly_costs WHERE month >= '2024-01' AND month < '2026-07'
  GROUP BY quarter
+), t AS (
+ SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter,
+ SUM(units_shipped) AS units_shipped, SUM(units_returned) AS units_returned,
+ COUNT(*) AS return_rows, COUNT(DISTINCT month) AS return_months,
+ SUM(CASE WHEN typeof(units_shipped) IN ('integer','real')
+ AND typeof(units_returned) IN ('integer','real')
+ AND units_shipped >= 0 AND units_returned >= 0
+ AND length(month) = 7 AND month GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]'
+ AND CAST(substr(month,6,2) AS INTEGER) BETWEEN 1 AND 12
+ AND units_shipped = CAST(units_shipped AS INTEGER)
+ AND units_returned = CAST(units_returned AS INTEGER) THEN 1 ELSE 0 END) AS valid_returns
+ FROM returns WHERE month >= '2024-01' AND month < '2026-07'
+ GROUP BY quarter
 )
 SELECT r.quarter, revenue, order_months, cost_of_sales, selling_admin,
- research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs
-FROM r LEFT JOIN c ON r.quarter=c.quarter ORDER BY r.quarter
+ research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs,
+ units_shipped, units_returned, return_rows, return_months, valid_returns
+FROM r LEFT JOIN c ON r.quarter=c.quarter LEFT JOIN t ON r.quarter=t.quarter ORDER BY r.quarter
 """.strip()
 COLUMNS = ('quarter', 'revenue', 'order_months', 'cost_of_sales', 'selling_admin',
-           'research_development', 'cost_months', 'valid_orders', 'total_orders', 'valid_costs', 'total_costs')
+           'research_development', 'cost_months', 'valid_orders', 'total_orders', 'valid_costs', 'total_costs',
+           'units_shipped', 'units_returned', 'return_rows', 'return_months', 'valid_returns')
 
 
 def decode_sql(raw: object) -> list[dict[str, str]]:
@@ -70,6 +85,7 @@ class FinancialEvidenceExtractor:
         source = Source('point14:financial_sql', company_id, 'sql_query',
                         {'query': FINANCIAL_QUERY}, raw)
         quarterly: dict[str, dict[str, Decimal]] = {}
+        returns = []
         expected = {f'{year}Q{quarter}' for year in (2024, 2025, 2026)
                     for quarter in range(1, 5) if year != 2026 or quarter <= 2}
         for row in rows:
@@ -79,6 +95,14 @@ class FinancialEvidenceExtractor:
             values = {key: number(value) for key, value in row.items() if key != 'quarter'}
             if any(values[key] != 3 for key in ('order_months', 'cost_months', 'valid_costs', 'total_costs')):
                 raise EvidenceError('Incomplete quarter or invalid monthly costs')
+            if any(values[key] != 3 for key in ('return_rows', 'return_months', 'valid_returns')):
+                raise EvidenceError('Incomplete, duplicated or invalid monthly returns')
+            shipped, returned = values['units_shipped'], values['units_returned']
+            if shipped == 0 and returned != 0:
+                raise EvidenceError('Returns without shipments cannot define a return rate')
+            returns.append(QuarterlyReturns(period, shipped, returned,
+                returned / shipped * 100 if shipped else None, source.evidence_id,
+                'complete' if shipped else 'zero_denominator'))
             if values['total_orders'] <= 0 or values['valid_orders'] != values['total_orders']:
                 raise EvidenceError('Missing or invalid orders')
             revenue = values['revenue']
@@ -110,4 +134,4 @@ class FinancialEvidenceExtractor:
                         f'{period}:{metric}:{comparison}', period, metric, value,
                         'percent' if metric == 'operating_margin_pct' else 'USD_thousands',
                         source.evidence_id, comparison_period, old, delta, percentage, status))
-        return FinancialSnapshot(tuple(metrics), source)
+        return FinancialSnapshot(tuple(metrics), source, tuple(returns))

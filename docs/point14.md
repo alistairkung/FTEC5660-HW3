@@ -1,185 +1,144 @@
-# Fisher Point 14 — Management transparency
+# Fisher Point 14 — Scoped transparency research
 
-PASS means management's communication is factually consistent with the financial
-record and meaningfully addresses material difficulties. Falling revenue can PASS;
-optimistic language alone does not establish dishonesty. Only `TRANSPARENT` maps
-to PASS. `EVASIVE` maps to FAIL. `UNCERTAIN` receives one final adjudication using
-exactly the same evidence, then must resolve or become an explicit operational error.
+**Option C is NOT READY for grading integration.** Proposition truth and disclosure
+are separate findings. Python returns `TRANSPARENT`, `EVASIVE` or
+`INSUFFICIENT_EVIDENCE` only after checking their prerequisites. Unknown materiality,
+measurement definitions, management knowledge or misstatement policy remain explicit.
+Only TRANSPARENT produces a researched PASS. The public adapter separately labels
+unresolved results as FAIL fallbacks; they are not researched investment failures.
 
-## Components and evidence
+## Current implementation
 
-`fisher_agent.point14` is independent of Points 4/5 and does not modify `hw3.py`.
+```text
+supplied SQL → financial facts + quarterly returns → adverse-event candidates
+supplied calls → sourced propositions → one association/disclosure model call
+→ deterministic proposition gates + disclosure prerequisites → typed decision
+```
 
 | Component | Responsibility |
 | --- | --- |
-| `FinancialEvidenceExtractor` | One aggregated supplied SQL call; quarterly revenue, expense components, operating costs/profit/margin, QoQ and YoY comparisons |
-| `ManagementClaimExtractor` | One model extraction over the four supplied earnings-call documents; exact quotation/source/quarter validation |
-| `TransparencyVerifier` | Materiality and disclosure interpretation, reference validation, and optional single adjudication |
-| `TransparencySpecialist` | Company-local sequencing, deadlines, diagnostics, optional nested tracing and canonical final explanation |
+| `FinancialEvidenceExtractor` | One supplied SQL aggregate; financial metrics and direct returns counts/rates |
+| `ManagementClaimExtractor` | One model extraction; exact source spans and normalized propositions |
+| `claim_evidence_matcher` | Same-proposition compatibility and numerical/directional relations |
+| `disclosure_rules` | Event preparation, communication coverage and prerequisite-gated aggregation |
+| `TransparencyVerifier` | One semantic association/disclosure call, source gates and canonical summary |
+| `TransparencySpecialist` | Company-local sequencing, diagnostics, deadlines and optional tracing |
 
-The financial query aggregates orders and costs separately before joining them.
-It retrieves ten quarters (2024Q1–2026Q2) for the four call periods and comparisons;
-only ten SQL rows are returned. There are 84 derived metrics: seven metrics,
-three views (level, QoQ, YoY), four quarters. Source amounts remain USD thousands;
-margins use percent. Absolute margin changes are percentage points. Relative
-change uses `difference / abs(previous) * 100`, including for negative profit.
-A zero comparison denominator retains the absolute change and an explicit status.
-Non-positive revenue, missing periods/months, duplicate quarters/monthly cost rows, malformed or
-non-finite numbers, nonnumeric source fields, SQL failures and truncation are errors.
-Every metric links to the original query and tool response. No materiality threshold
-or intent judgement is made by this component.
+Revenue, costs and returns are aggregated separately before joining ten quarters
+(2024Q1–2026Q2); no rows multiply through joins. The snapshot retains 84 financial
+metrics and ten quarterly returns records. Return rate is
+`100 * SUM(units_returned) / SUM(units_shipped)`, with original counts and provenance.
+All three total/valid/distinct monthly records are required. Missing, duplicated,
+malformed, nonfinite or fractional counts are errors; a zero shipment denominator
+retains an explicit unknown rate. Original amounts remain USD thousands.
 
-Claims retain the exact retrieved management statement as the quotation (no separate
-unchecked paraphrase). Only whitespace differences are normalized for matching;
-canonical quotations are rebuilt from the transcript. Misattributed documents or
-quarters, unsupported/blank quotes, headings, analyst turns, cross-speaker spans and
-extra model fields are rejected. Each quote must remain within one management turn;
-bare executive names are recognized by a matching titled introduction anywhere in that transcript.
-At least one claim per call is required; an empty extraction is not evidence of silence.
-A model can still misinterpret a speaker or the time reference within a sentence;
-source grounding is not a guarantee of semantic correctness.
+Claims preserve company, document, date, speaker, exact quotation and offsets.
+Named executives are recognized from a matching titled introduction anywhere in
+that transcript. Blank wording, headings, analyst speech and cross-speaker spans
+are rejected. Normalized propositions retain subject, metric, asserted period,
+assertion type, value/unit, comparison basis/period, qualifiers, certainty and
+measurement definition. Values and definition wording must be copied from the
+quotation. A copied phrase proves grounding, not semantic normalization correctness.
 
-The verifier sees all computed metrics, validated claims and complete original
-transcripts, allowing omissions to be assessed against the whole call. It returns
-only supplied evidence IDs, materiality flags, classifications and finite explanation
-codes. It cannot add numerical facts or free-text business events. Python rebuilds
-the final explanation from original numbers and quotes; the complete comparison
-list remains on the result. `ACKNOWLEDGED` needs a setback/explanation claim;
-`CONTRADICTED` needs a same-quarter claim. `UNADDRESSED` references the complete
-quarter transcript. `NOT_APPLICABLE` cannot assert materiality. `UNVERIFIABLE`
-is distinct from contradiction. An EVASIVE assessment requires at least one material
-contradiction/omission; TRANSPARENT cannot retain that finding or material UNVERIFIABLE
-evidence, including after final adjudication. Every quarter
-must be covered. Materiality and semantic factual consistency remain model judgements.
-No labels or company-name rules enter this process.
+Compatibility checks precede truth comparison: wrong company, subject, metric,
+period, accounting/ratio definition, unit or comparator cannot produce CONTRADICTED.
+Unknown alignment remains INCONCLUSIVE; known incompatibility is UNMATCHED.
+Returned-unit/shipped-unit rates cannot contradict monetary refund/revenue claims.
+Python converts compatible monetary units and compares at the copied decimal
+precision. Signed decreases preserve their quoted magnitude and direction;
+percentage-point changes are distinct from relative percentage changes. Qualitative
+low/high/stable has no invented numerical threshold. Causal and forecast claims
+are not treated as measured current-period facts.
 
-The verifier payload adds Decimal-computed USD-million equivalents while preserving
-the original thousand-denominated records and provenance. It includes an explicitly
-named one-decimal displayed level, matching the supplied calls' monetary precision;
-this is a presentation value, not a factual-conflict tolerance. Selecting the relevant
-claim and judging materiality remain semantic tasks; no general numeric parser is added.
+Extraction is capped at three relevant candidates per call (12 total), prioritizing
+revenue, quality/returns and explicit setbacks. **It is not exhaustive.** Diagnostics
+record per-call counts and cap hits. The verifier sees complete original transcripts,
+but can acknowledge only validated extracted quotations; relevant unextracted
+wording leaves disclosure inconclusive rather than supporting an omission claim.
 
-## Execution, failures and integration dependency
+## Scope and unresolved policy
 
-Typical use (after loading the environment):
+Event candidates are prepared from adverse fact changes before matching; they are
+not automatically material. Materiality needs a relevant source-backed qualitative
+basis rather than an arbitrary percentage cutoff. `NOT_FOUND` describes a search
+within the named supplied quarter call, not proof of concealment. Coverage is
+explicitly limited to the four supplied earnings calls and measured financial/returns
+facts; missing calls, unknown dates and undefined measurements remain gaps.
 
-```python
-from fisher_agent.point14.runtime import build_transparency_specialist
-from observability import Tracing
+This scope currently has no independent management-knowledge basis for an absent
+acknowledgement. Knowledge is established only by a dated same-event admission,
+which also prevents NOT_FOUND. Therefore omission-to-EVASIVE is a policy/evidence
+limitation, not a supported FAIL path. The decision records
+`omission_knowledge_policy_unresolved`; it does not assume that database availability
+proves management knowledge. An aligned numerical misstatement remains independent
+of candid disclosure about a different event, with `misstatement_policy_unresolved`
+until its Point 14 aggregation policy is agreed. Critical unknowns block PASS and
+remain INSUFFICIENT_EVIDENCE. No company-specific rules or public labels enter runtime.
 
-with Tracing() as tracing:
-    specialist = build_transparency_specialist(tracing)
-    result = await specialist.evaluate(company_id, supplied_tools)
-    point_only_output = result.public_result()
-```
+## Execution and evaluation
 
-Use the application's single `Tracing` lifecycle, closing after all company tasks.
-If constructed without an injected or current lifecycle, call `specialist.close()`
-once after the batch. Missing credentials/SDK or SDK export errors do not change
-results. Model and supplied tool invocations receive native LangChain callbacks;
-all manual stages nest under Point 14. Quote validation nests under extraction.
-Model usage/latency, recovery counts, rejection counts, classifications, adjudication
-and final verdict are recorded. A trace ID does not prove remote ingestion.
+Two normal model calls are retained; no extra judge or adjudication loop is used.
+Each stage permits one bounded schema/grounding repair. The existing six-call hard
+cap, 40-second attempt timeout and 180-second company deadline remain unchanged.
+Runtime uses LangChain `deepseek-v4-flash`, thinking explicitly disabled,
+`temperature=0`, `max_tokens=3500`, and no SDK transport retries. Point 14 uses zero
+interviews. Cancellation propagates; errors retain stage/type diagnostics.
 
-The required model is `hw3.MODEL_NAME` (`deepseek-v4-flash`), through LangChain,
-with thinking explicitly disabled in the serialized request.
-No SDK transport retries; each logical model stage gets at most one malformed-output
-or grounding recovery. Semantic adjudication is a separate single stage. Normally
-two calls; at most six, each limited to 40 seconds, with a 180-second company deadline.
-The evaluator uses four concurrent companies (about 15 minutes at the company
-bounds), with a 25-minute batch deadline that preserves queued-company error entries; the eventual three-point orchestrator must enforce its global 30-minute
-budget and share tool instances. Point 14 spends **zero interviews**.
-
-Exceptional results have `verdict=None`, stage/type diagnostics and an explicit
-`api_error`, `retrieval_error`, `invalid_output` or `deadline` status. Cancellation
-propagates. `public_result()` deliberately returns a clearly labelled FAIL fallback
-so the parent can preserve company coverage; this is never an evidence-backed FAIL.
-The development scorer counts unresolved errors wrong, even if fallback FAIL would
-coincidentally match a label.
-
-**Shared-contract dependency:** no `PointResult` exists on the chosen committed
-foundation (`db218bc`). Point 4's `SalesResult` and Point 5's
-`MarginResult` are different specialist records. This change therefore adds only
-an owned `TransparencyResult`, not a replacement shared contract or a conflicting
-`fisher_agent/contracts.py`. Integration must adapt these fields to the eventual
-shared contract: `point_id=14`, company, final verdict, reason, financial/transcript/
-claim provenance and diagnostics. Preserve `verdict=None` and error status until
-the public boundary. That adapter is intentionally deferred to the integration task.
-The namespace package will coexist with Point 4's parent `fisher_agent/__init__.py`.
-
-## Commands and measured results
-
-From this worktree with the existing virtual environment activated:
+Use one injected `Tracing` lifecycle for the batch; it nests source tools, model
+calls, proposal validation and final diagnostics. If the specialist created its own
+lifecycle, close it once after all companies finish. Optional tracing failures do
+not alter results. Printed IDs alone do not prove remote ingestion.
 
 ```bash
 python -m unittest discover -s test -v
-python -m evaluation.point14 --financial-only --output .venv/evaluation/point14-financial-results.json
-python -m evaluation.point14 --live --env-file ../../.env --concurrency 2 --output .venv/evaluation/point14-results.json
+python -m evaluation.point14 --financial-only --output .venv/evaluation/point14-financial.json
+python -m evaluation.point14 --live --env-file ../../.env --concurrency 2 --output .venv/evaluation/point14-live.json
 ```
 
-The live command explicitly allows paid model calls. In a fresh clone use the
-normal `.env` (omit `--env-file ../../.env`). Ground truth is loaded only by
-`evaluation.point14`, after all specialist decisions. Its report includes accuracy,
-PASS/FAIL recall, balanced accuracy, disagreements, failures by stage, unsupported
-quotation rejections, adjudications, calls, tokens, latency, trace IDs and full evidence.
-The five disagreement-attribution fields are deliberately unreviewed until a human
-compares financial extraction, missed statements, misattributed evidence, verification
-and judgement. They are not automatically guessed from the expected label.
+The last command explicitly permits paid calls; a full rerun is not authorized by
+these instructions. In a fresh clone omit `--env-file ../../.env` to use `.env`.
+Labels are loaded only after decisions. Evaluation reports semantic abstentions,
+operational failures, grounded correctness and public fallback credit separately;
+legacy `failures` means all unresolved verdicts, including abstentions.
 
-**Readiness: NOT READY for integration.** On 31 October 2026 the orchestrator ran
-the repaired implementation against all 20 public companies, with concurrency two:
+Offline Option C validation: **77 tests, 76 passed and one live smoke skipped**.
+Source-only retrospective fixtures cover Cobalt's incompatible profit/returns
+comparison, Kestrel's direct 378/7,432 ratio, Dunmore's independent misstatement and
+admission, Ashgrove uncertainty, and Aurel's unsupported omission inference. Original
+source text, SQL responses and trace IDs are retained; expected labels are omitted.
+All five returns fixtures exactly match the recorded feasibility-review tool outputs.
 
-| Measure | Result |
-| --- | ---: |
-| Evidence-backed correct / total | 6/20 (30.00%) |
-| Balanced accuracy, errors counted wrong | 45.24% |
-| PASS recall / FAIL recall | 7.14% (1/14) / 83.33% (5/6) |
-| Valid final assessments / operational failures | 14 / 6 |
-| Runtime / model calls | 86.98 seconds / 54 |
-| Input / output / total tokens | 561,290 / 38,257 / 599,547 |
-| Adjudications / bounded repairs | 3 / 11 |
-| Financial / claim-extraction / quotation failures | 0 / 0 / 0 |
+A local `cl100k_base` approximation found 12-claim sample outputs of 1,383–1,402
+tokens and 21–26-event responses of 1,199–1,425 tokens. Full verification inputs
+were approximately 16,105–16,455 tokens, extraction inputs 1,599–1,626. These are
+examples, not DeepSeek tokenizer measurements or worst-case guarantees. The
+3,500-token output allowance is unchanged. The separately authorized live gate is
+evidence-focused; no new 20-company Option C accuracy baseline has been run.
 
-All 54 generations returned valid JSON. Offline replay rejected 17 semantically
-inconsistent proposals: 13 acknowledgements without the required claim kind, two
-TRANSPARENT proposals retaining material unresolved evidence, and two EVASIVE
-proposals without supporting material findings. Six companies exhausted recovery
-(four during verification, two during final adjudication). Eight other companies
-received valid but incorrect FAIL verdicts. Only `emberly_systems` received PASS.
-Mapping all six operational errors to public FAIL would give 7/20 and 53.57%
-balanced accuracy; its extra matching fallback is not evidence-backed correctness.
+## Historical baselines and integration boundary
 
-Before repair, the live baseline spent 515,187 tokens and 541.50 seconds on 56
-calls, producing zero supported classifications because thinking exhausted the
-3,500-token output allowance. Disabling thinking restored structured execution;
-the current baseline exposes semantic and validation-consistency failures instead.
-Prompts, domain rules, output schemas and execution bounds were preserved.
+These measurements precede Option C and do not establish its accuracy:
 
-Remote Langfuse retrieval confirmed 20 traces and 317 observations, all closed and
-with complete parent links. Representative workflows:
+| Version | Supported finals | Grounded correct | Balanced accuracy | Calls / tokens / seconds |
+| --- | ---: | ---: | ---: | --- |
+| Original thinking runtime | 0/20 | 0/20 | 0% | 56 / 515,187 / 541.50 |
+| Non-thinking repaired baseline (`b10326b`) | 14/20 | 6/20 | 45.24% | 54 / 599,547 / 86.98 |
+
+The repaired baseline had PASS recall 1/14 (7.14%), FAIL recall 5/6 (83.33%), six
+validation failures, three adjudications and eleven repairs. Public FAIL fallback
+credit would increase accuracy to 7/20 and balanced accuracy to 53.57%; it does not
+improve grounded correctness. All 54 generations were JSON, while 17 proposals
+failed semantic-consistency checks. Repeated Ashgrove execution changed an
+adjudicated FAIL to an unresolved error, demonstrating workflow variability.
+Remote retrieval confirmed 20 traces / 317 closed observations with complete parents:
 [supported PASS](https://cloud.langfuse.com/project/cmvvyy2cf010pad0k901a5phs/traces/f511864df6b0d71ce17f91f798517449),
 [incorrect FAIL](https://cloud.langfuse.com/project/cmvvyy2cf010pad0k901a5phs/traces/4188339ba382c9fa411ac4a0325885be),
-[rejected final adjudication](https://cloud.langfuse.com/project/cmvvyy2cf010pad0k901a5phs/traces/2e0073c85ed7d6c6b2e8cd5bab3945a4).
+[validation failure](https://cloud.langfuse.com/project/cmvvyy2cf010pad0k901a5phs/traces/2e0073c85ed7d6c6b2e8cd5bab3945a4).
 
-The evaluated source is base commit `7da41532d677196b691ebbfbd384ade83d28ea61`
-plus the local repair patch; the review manifest records runtime hashes and full
-configuration. The ignored review artifacts are `point14-full.json`,
-`point14-full-config.json` and retrieved traces under the orchestrator's
-`.review/repairs/` directory; generated evaluation outputs are not committed.
-
-Financial extraction succeeded for 20/20 companies with 84 metrics each. The
-snapshot excludes cash flow and returns, so setbacks limited to those indicators
-may be missed. Unit equivalents remove scaling work but do not establish semantic
-claim association or a universal materiality threshold. Further changes need an
-evidence-backed semantic review; no public-company-specific rules were introduced.
-Repeated execution of the same repaired configuration changed Ashgrove from an
-adjudicated FAIL to an unresolved error, demonstrating workflow variability.
-
-`python -m unittest discover -s test -v` ran **51 tests: 50 passed, one opt-in
-live smoke skipped**. Regression tests cover serialized thinking configuration,
-unresolved adjudication, speaker/heading provenance and invalid duplicate costs.
-Protected `hw3.py`, requirements, public data and observability remain unchanged.
-The standalone optional observability smoke retains its foundation configuration;
-the Point 4 repair supplies its non-thinking configuration when those PRs are
-eventually reconciled. This Point 14 specialist uses its own repaired runtime.
-Shared-result adaptation and full three-point orchestration remain separate work.
+Point 14 owns `TransparencyResult`; it does not define a competing shared contract.
+A future adapter must retain company, point 14, optional verdict, reason, source
+provenance, matching/disclosure findings and diagnostics. Preserve None until the
+explicit public fallback boundary. `hw3.py`, other specialists, dependencies and the
+shared observability foundation remain unchanged. Cash flow and outside-call
+communications remain outside this evidence slice. Final orchestration and any
+unresolved policy decision require separate agreement.

@@ -1,114 +1,110 @@
 import json
+from dataclasses import replace
 from decimal import Decimal
 import unittest
 from unittest.mock import AsyncMock
 from langchain_core.messages import AIMessage
 
-from fisher_agent.point14.model_gateway import ModelGateway
-from fisher_agent.point14.records import Diagnostics, ManagementClaim
-from fisher_agent.point14.transparency_verifier import TransparencyVerifier
+from fisher_agent.point14.claim_evidence_matcher import evidence_facts
+from fisher_agent.point14.disclosure_rules import prepare_events
 from fisher_agent.point14.financial_evidence_extractor import FinancialEvidenceExtractor
+from fisher_agent.point14.model_gateway import ModelGateway
+from fisher_agent.point14.records import Diagnostics, ManagementClaim, PERIODS, Source, SourcedProposition, Transcript
+from fisher_agent.point14.transparency_verifier import TransparencyVerifier
 from test_point14_financial import financial_sql
 
-
-def finding(period, classification='ACKNOWLEDGED', material=True, claim_ids=None,
-            basis='OPEN_DISCUSSION'):
-    return {'metric_id': f'{period}:revenue:qoq', 'classification': classification,
-            'material': material, 'claim_ids': claim_ids if claim_ids is not None else [f'claim:{period}:1'],
-            'basis': basis}
+DATES = dict(zip(PERIODS, ('2025-10-29', '2026-02-25', '2026-04-28', '2026-07-29')))
 
 
-def judgement(assessment='TRANSPARENT', **changes):
-    value = {'assessment': assessment, 'comparisons': [finding(p) for p in ('2025Q3','2025Q4','2026Q1','2026Q2')]}
-    value.update(changes)
-    return value
+def claims():
+    return tuple(ManagementClaim(f'claim:{p}:1', f'earnings_call_{p.lower()}.md', p,
+        'revenue', f'Revenue was USD {value} thousand.', 'favourable',
+        SourcedProposition('company', 'revenue', p, 'level', Decimal(value), 'USD_thousands',
+                           'level', certainty='asserted', measurement_definition='sales_revenue',
+                           definition_quotation='Revenue'), 'x', f'doc:{p}', 'CEO', DATES[p])
+        for p, value in zip(PERIODS, ('150', '100', '100', '90')))
+
+
+def transcripts():
+    return tuple(Transcript(p, f'earnings_call_{p.lower()}.md', Source(f'doc:{p}', 'x',
+        'read_document', {'name': f'earnings_call_{p.lower()}.md'},
+        f'Date: {DATES[p]}\n\nCEO: Revenue was discussed.')) for p in PERIODS)
+
+
+def judgement(snapshot, supplied_claims):
+    return {'matches': [{'claim_id': c.evidence_id,
+                         'fact_id': f'{c.proposition.period}:{c.proposition.metric}:level'}
+                        for c in supplied_claims],
+            'disclosures': [{'event_id': event.evidence_id, 'relation': 'NOT_FOUND',
+                'claim_ids': [], 'materiality': 'UNKNOWN', 'materiality_claim_ids': [],
+                'knowledge': 'UNKNOWN', 'knowledge_claim_ids': []}
+                for event in prepare_events(evidence_facts(snapshot))]}
 
 
 class VerifierTests(unittest.IsolatedAsyncioTestCase):
-    async def run_verifier(self, candidates, adjudicate=False):
+    async def run_verifier(self, mutate=None, repair=False):
         snapshot = await FinancialEvidenceExtractor().extract('x', financial_sql)
-        claims = tuple(ManagementClaim(f'claim:{p}:1', f'earnings_call_{p.lower()}.md',
-                       p, 'revenue', 'We discussed demand and the shortfall.', 'acknowledges_setback')
-                       for p in ('2025Q3','2025Q4','2026Q1','2026Q2'))
+        supplied_claims = claims()
+        valid = judgement(snapshot, supplied_claims)
+        candidate = mutate(json.loads(json.dumps(valid))) if mutate else valid
         model = AsyncMock()
-        model.ainvoke.side_effect = [AIMessage(content=json.dumps(c)) for c in candidates]
+        model.ainvoke.side_effect = [AIMessage(content=json.dumps(item))
+            for item in ([candidate, valid] if repair else [candidate, candidate])]
         diagnostics = Diagnostics()
         verifier = TransparencyVerifier(ModelGateway(model, diagnostics))
-        assessment = await verifier.verify(snapshot, claims)
-        if adjudicate and assessment.assessment == 'UNCERTAIN':
-            assessment = await verifier.adjudicate(snapshot, claims, assessment)
-        return assessment, model, diagnostics
+        result = await verifier.verify(snapshot, supplied_claims, transcripts())
+        return result, model, diagnostics
 
-    async def test_acknowledged_decline_and_cost_pressure_can_pass(self):
-        for metric in ('revenue', 'operating_costs'):
-            proposal = judgement()
-            for item in proposal['comparisons']:
-                item['metric_id'] = item['metric_id'].replace('revenue', metric)
-            result, _, _ = await self.run_verifier([proposal])
-            self.assertEqual(result.assessment, 'TRANSPARENT')
+    async def test_matched_truth_does_not_upgrade_unknown_disclosure_to_transparent(self):
+        result, model, _ = await self.run_verifier()
+        self.assertEqual(result.assessment, 'INSUFFICIENT_EVIDENCE')
+        self.assertTrue(all(m.relation == 'SUPPORTED' for m in result.matches))
+        self.assertTrue(all(d.knowledge == 'UNKNOWN' for d in result.disclosures))
+        self.assertEqual(model.ainvoke.call_count, 1)
 
-    async def test_material_contradiction_or_omission_can_fail(self):
-        for classification, basis, ids in [('CONTRADICTED','FACTUAL_CONFLICT',['claim:2025Q3:1']),
-                                            ('UNADDRESSED','MATERIAL_OMISSION',[])]:
-            proposal = judgement('EVASIVE')
-            proposal['comparisons'][0] = finding('2025Q3', classification, True, ids, basis)
-            result, _, _ = await self.run_verifier([proposal])
-            self.assertEqual(result.assessment, 'EVASIVE')
+    async def test_unproved_materiality_and_knowledge_remain_unknown(self):
+        def mutate(value):
+            value['disclosures'][0].update(materiality='MATERIAL', knowledge='ESTABLISHED')
+            return value
+        result, _, _ = await self.run_verifier(mutate)
+        self.assertEqual(result.assessment, 'INSUFFICIENT_EVIDENCE')
+        self.assertEqual(result.disclosures[0].materiality, 'UNKNOWN')
+        self.assertEqual(result.disclosures[0].knowledge, 'UNKNOWN')
 
-    async def test_no_material_setback_does_not_imply_evasiveness(self):
-        proposal = judgement(comparisons=[finding(p, 'NOT_APPLICABLE', False, [], 'NO_MATERIAL_SETBACK')
-                   for p in ('2025Q3','2025Q4','2026Q1','2026Q2')])
-        result, _, _ = await self.run_verifier([proposal])
-        self.assertEqual(result.assessment, 'TRANSPARENT')
+    async def test_wrong_metric_alignment_is_unmatched_not_a_contradiction(self):
+        def mutate(value):
+            value['matches'][0]['fact_id'] = '2025Q3:operating_profit:level'
+            return value
+        result, _, _ = await self.run_verifier(mutate)
+        self.assertEqual(result.matches[0].relation, 'UNMATCHED')
+        self.assertEqual(result.assessment, 'INSUFFICIENT_EVIDENCE')
 
-    async def test_uncertainty_has_one_final_adjudication(self):
-        initial = judgement('UNCERTAIN')
-        initial['comparisons'][0] = finding('2025Q3', 'UNVERIFIABLE', True,
-                                            ['claim:2025Q3:1'], 'AMBIGUOUS_EVIDENCE')
-        result, model, diagnostics = await self.run_verifier([initial, judgement()], adjudicate=True)
-        self.assertEqual(result.assessment, 'TRANSPARENT')
+    async def test_invented_or_missing_references_are_rejected_with_one_recovery(self):
+        def mutate(value):
+            value['matches'][0]['fact_id'] = 'invented'
+            return value
+        result, model, diagnostics = await self.run_verifier(mutate, repair=True)
+        self.assertEqual(result.assessment, 'INSUFFICIENT_EVIDENCE')
         self.assertEqual(model.ainvoke.call_count, 2)
-        self.assertEqual(diagnostics.adjudications, 1)
-
-    async def test_final_transparent_cannot_keep_material_unverifiable_findings(self):
-        initial = judgement('UNCERTAIN')
-        initial['comparisons'][0] = finding('2025Q3', 'UNVERIFIABLE', True,
-                                            ['claim:2025Q3:1'], 'AMBIGUOUS_EVIDENCE')
-        unresolved = {**initial, 'assessment': 'TRANSPARENT'}
-        with self.assertRaises(ValueError):
-            await self.run_verifier([initial, unresolved, unresolved], adjudicate=True)
-
-    async def test_payload_provides_decimal_million_equivalents_without_changing_sources(self):
-        snapshot = await FinancialEvidenceExtractor().extract('x', financial_sql)
-        payload = TransparencyVerifier(None).payload(snapshot, (), ())
-        revenue = next(m for m in payload['financial_metrics']
-                       if m['evidence_id'] == '2025Q3:revenue:qoq')
-        self.assertEqual(revenue['USD_millions']['value'], Decimal('0.15'))
-        self.assertEqual(revenue['USD_millions']['comparison_value'], Decimal('0.18'))
-        self.assertEqual(revenue['USD_millions']['absolute_change'], Decimal('-0.03'))
-        self.assertEqual(revenue['USD_millions']['value_rounded_1dp'], Decimal('0.2'))
-        self.assertEqual(revenue['value'], 150)
-        margin = next(m for m in payload['financial_metrics']
-                      if m['evidence_id'] == '2025Q3:operating_margin_pct:qoq')
-        self.assertNotIn('USD_millions', margin)
-        self.assertEqual(snapshot.metrics[0].value, 150)
-
-    async def test_rejects_unsupported_metrics_numbers_cross_quarter_and_inconsistent_verdicts(self):
-        proposals = []
-        invented = judgement(); invented['comparisons'][0]['metric_id'] = 'made_up:500'
-        proposals.append(invented)
-        numbers = judgement(); numbers['profit'] = 999999
-        proposals.append(numbers)
-        cross = judgement(); cross['comparisons'][0]['claim_ids'] = ['claim:2025Q4:1']
-        proposals.append(cross)
-        proposals.append(judgement('EVASIVE'))
-        omitted = judgement(); omitted['comparisons'] = omitted['comparisons'][:1]
-        proposals.append(omitted)
-        for candidate in proposals:
-            with self.subTest(candidate=candidate), self.assertRaises(ValueError):
-                await self.run_verifier([candidate, candidate])
-
-    async def test_malformed_output_can_recover_once(self):
-        result, _, diagnostics = await self.run_verifier([{'broken': True}, judgement()])
-        self.assertEqual(result.assessment, 'TRANSPARENT')
         self.assertEqual(diagnostics.parsing_retries, 1)
+        for mutator in (mutate, lambda value: {**value, 'matches': []},
+                         lambda value: {**value, 'disclosures': []}):
+            with self.assertRaises(ValueError):
+                await self.run_verifier(mutator)
+
+    async def test_duplicate_and_cross_event_sources_do_not_create_acknowledgement(self):
+        def mutate(value):
+            value['disclosures'][0].update(relation='ACKNOWLEDGED', claim_ids=['claim:2026Q2:1'])
+            return value
+        result, _, _ = await self.run_verifier(mutate)
+        self.assertEqual(result.disclosures[0].relation, 'INCONCLUSIVE')
+        self.assertEqual(result.assessment, 'INSUFFICIENT_EVIDENCE')
+
+    async def test_complete_payload_has_direct_return_counts_and_bounded_claim_scope(self):
+        snapshot = await FinancialEvidenceExtractor().extract('x', financial_sql)
+        payload = TransparencyVerifier(None).payload(snapshot, claims(), transcripts())
+        direct = next(f for f in payload['facts'] if f['evidence_id'] == '2026Q1:return_rate:level')
+        self.assertEqual(direct['denominator'], 1000)
+        self.assertEqual(direct['value'], Decimal('2.600'))
+        self.assertEqual(payload['coverage']['claim_extraction_scope'], 'bounded_candidates_not_exhaustive')
+        self.assertEqual(len(payload['full_transcripts']), 4)

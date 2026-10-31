@@ -7,12 +7,12 @@ from fisher_agent.point14.financial_evidence_extractor import FinancialEvidenceE
 @tool
 def financial_sql(query: str) -> str:
     """Return independently worked quarterly totals in USD thousands."""
-    header = 'quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs'
+    header = 'quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs | units_shipped | units_returned | return_rows | return_months | valid_returns'
     rows = []
     revenues = [80, 100, 120, 160, 200, 180, 150, 100, 100, 90]
     for i, revenue in enumerate(revenues):
         quarter = f'{2024 + i // 4}Q{i % 4 + 1}'
-        rows.append(f'{quarter} | {revenue} | 3 | 40 | 10 | 10 | 3 | 10 | 10 | 3 | 3')
+        rows.append(f'{quarter} | {revenue} | 3 | 40 | 10 | 10 | 3 | 10 | 10 | 3 | 3 | 1000 | 26 | 3 | 3 | 3')
     return header + '\n' + '\n'.join(rows)
 
 
@@ -65,7 +65,7 @@ class FinancialTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(metric.percentage_change)
         self.assertEqual(metric.comparison_status, 'zero_denominator')
 
-    def synthetic_database(self, *, duplicate_invalid_cost=False):
+    def synthetic_database(self, *, duplicate_invalid_cost=False, return_mutation=None):
         import sqlite3
         from contextlib import closing
         from langchain_core.tools import tool
@@ -76,7 +76,8 @@ class FinancialTests(unittest.IsolatedAsyncioTestCase):
             with closing(sqlite3.connect(':memory:')) as db:
                 db.executescript('CREATE TABLE orders(order_date TEXT, amount REAL); '
                                  'CREATE TABLE monthly_costs(month TEXT, cost_of_sales REAL, '
-                                 'selling_admin REAL, research_development REAL);')
+                                 'selling_admin REAL, research_development REAL); '
+                                 'CREATE TABLE returns(month TEXT, units_shipped, units_returned);')
                 for year in (2024, 2025, 2026):
                     for month in range(1, 13 if year < 2026 else 7):
                         # Two orders per month: quarterly revenue=600, costs=180.
@@ -84,8 +85,13 @@ class FinancialTests(unittest.IsolatedAsyncioTestCase):
                                        [(f'{year}-{month:02}-01', 120), (f'{year}-{month:02}-15', 80)])
                         db.execute('INSERT INTO monthly_costs VALUES (?, 40, 10, 10)',
                                    (f'{year}-{month:02}',))
+                        shipped, returned = ((100, 1), (200, 4), (700, 21))[(month - 1) % 3]
+                        db.execute('INSERT INTO returns VALUES (?, ?, ?)',
+                                   (f'{year}-{month:02}', shipped, returned))
                 if duplicate_invalid_cost:
                     db.execute("INSERT INTO monthly_costs VALUES ('2025-07', 9999, NULL, 1000)")
+                if return_mutation:
+                    db.execute(return_mutation)
                 cursor = db.execute(query)
                 return '\n'.join([' | '.join(c[0] for c in cursor.description)] +
                                  [' | '.join(str(v) for v in row) for row in cursor.fetchall()])

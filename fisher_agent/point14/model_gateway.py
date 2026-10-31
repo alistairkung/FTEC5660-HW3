@@ -42,12 +42,18 @@ class ModelGateway:
                 proposal = schema.model_validate_json(response.content)
                 return validator(proposal)
             except (ValidationError, EvidenceError, TypeError) as exc:
+                # Only finite local codes enter repair instructions, never raw output.
+                allowed = {'incomplete_claim_matching', 'unknown_fact_reference',
+                           'incomplete_event_coverage', 'unknown_claim_reference'}
+                code = str(exc) if isinstance(exc, EvidenceError) and str(exc) in allowed else (
+                    'schema_mismatch' if isinstance(exc, ValidationError) else 'grounding_mismatch')
+                self.diagnostics.validation_rejections.append(code)
                 if attempt:
                     raise ModelOutputError('Invalid structured evidence after one recovery') from exc
                 self.diagnostics.parsing_retries += 1
                 # Never echo arbitrary provider output or tool text into instructions.
                 messages.append(HumanMessage(content=(
-                    'The previous candidate failed schema or evidence validation. Re-extract from '
+                    f'The previous candidate failed validation ({code}). Re-extract from '
                     'the ORIGINAL evidence. Use exact quotations, correct periods, and supplied '
                     'evidence IDs only; do not add fields or numbers. This is the only recovery.')))
         raise AssertionError('Unreachable')

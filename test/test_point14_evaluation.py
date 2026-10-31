@@ -4,6 +4,16 @@ from evaluation.point14 import score_results
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_semantic_abstentions_and_operational_errors_are_reported_separately(self):
+        results = [TransparencyResult('unknown', status='insufficient_evidence'),
+                   TransparencyResult('broken', status='api_error')]
+        report = score_results(results, {name: {'points': {'14':'FAIL'}} for name in ('unknown','broken')})
+        self.assertEqual(report['semantic_abstentions'], ['unknown'])
+        self.assertEqual([r['company'] for r in report['operational_failures']], ['broken'])
+        self.assertEqual(report['grounded_correct'], 0)
+        self.assertEqual(report['public_adapter_correct'], 2)
+        self.assertEqual(report['public_fallback_credit'], 2)
+
     def test_errors_do_not_count_as_grounded_correct_failures(self):
         results = [TransparencyResult('pass', verdict='PASS', status='assessed'),
                    TransparencyResult('fail', verdict='FAIL', status='assessed'),

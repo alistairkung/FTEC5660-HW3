@@ -1,0 +1,582 @@
+{
+  "cobalt_holdings": {
+    "trace_id": "a7a983e73a948779b6dc827ae5ab370a",
+    "transcripts": [
+      {
+        "period": "2025Q3",
+        "name": "earnings_call_2025q3.md",
+        "source": {
+          "evidence_id": "doc:2025Q3",
+          "company_id": "cobalt_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q3.md"
+          },
+          "raw": "# Cobalt Holdings: earnings call, third quarter 2025\n\nDate: 2025-10-29\n\nIrene Ruiz (Chief Executive): Revenue for the quarter was USD 215.6 million. Order books are in line with our plan.\n\nOlivia Brennan (Chief Financial Officer): We kept a close eye on costs across our plants. Returns rose sharply this quarter because of a faulty batch of labelling line parts. We are replacing every affected unit at our own cost.\n\nAnalyst: Will you keep investing in new products?\n\nIrene Ruiz: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2025Q4",
+        "name": "earnings_call_2025q4.md",
+        "source": {
+          "evidence_id": "doc:2025Q4",
+          "company_id": "cobalt_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q4.md"
+          },
+          "raw": "# Cobalt Holdings: earnings call, fourth quarter 2025\n\nDate: 2026-02-25\n\nIrene Ruiz (Chief Executive): Revenue for the quarter was USD 192.6 million. Demand from cosmetics brand customers stayed healthy.\n\nOlivia Brennan (Chief Financial Officer): Freight costs eased a little. Product quality remained excellent and returns were negligible.\n\nAnalyst: Will you keep investing in new products?\n\nIrene Ruiz: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2026Q1",
+        "name": "earnings_call_2026q1.md",
+        "source": {
+          "evidence_id": "doc:2026Q1",
+          "company_id": "cobalt_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q1.md"
+          },
+          "raw": "# Cobalt Holdings: earnings call, first quarter 2026\n\nDate: 2026-04-28\n\nIrene Ruiz (Chief Executive): Revenue for the quarter was USD 201.1 million. Demand from dairy cooperative customers stayed healthy.\n\nOlivia Brennan (Chief Financial Officer): We kept a close eye on costs across our plants. Product quality remained excellent and returns were negligible.\n\nAnalyst: Will you keep investing in new products?\n\nIrene Ruiz: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2026Q2",
+        "name": "earnings_call_2026q2.md",
+        "source": {
+          "evidence_id": "doc:2026Q2",
+          "company_id": "cobalt_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q2.md"
+          },
+          "raw": "# Cobalt Holdings: earnings call, second quarter 2026\n\nDate: 2026-07-29\n\nIrene Ruiz (Chief Executive): Revenue for the quarter was USD 227.7 million. Demand from cosmetics brand customers stayed healthy.\n\nOlivia Brennan (Chief Financial Officer): Freight costs eased a little. Returns stayed low and product quality was steady.\n\nAnalyst: Will you keep investing in new products?\n\nIrene Ruiz: We invest for the long term and our research budget reflects that.\n"
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "evidence_id": "2025Q3:operating_profit:level",
+        "period": "2025Q3",
+        "metric": "operating_profit",
+        "value": "31150.30",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": null,
+        "comparison_value": null,
+        "absolute_change": null,
+        "percentage_change": null,
+        "comparison_status": "level"
+      },
+      {
+        "evidence_id": "2025Q3:operating_profit:qoq",
+        "period": "2025Q3",
+        "metric": "operating_profit",
+        "value": "31150.30",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2025Q2",
+        "comparison_value": "34921.40",
+        "absolute_change": "-3771.10",
+        "percentage_change": "-10.79882249852525958294913721",
+        "comparison_status": "available"
+      },
+      {
+        "evidence_id": "2025Q3:operating_profit:yoy",
+        "period": "2025Q3",
+        "metric": "operating_profit",
+        "value": "31150.30",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2024Q3",
+        "comparison_value": "37680.90",
+        "absolute_change": "-6530.60",
+        "percentage_change": "-17.33132701182827374080767710",
+        "comparison_status": "available"
+      }
+    ],
+    "financial_source": {
+      "evidence_id": "point14:financial_sql",
+      "company_id": "cobalt_holdings",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "WITH r AS (\n SELECT substr(order_date,1,4)||'Q'||((CAST(substr(order_date,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(amount) AS revenue, COUNT(DISTINCT substr(order_date,1,7)) AS order_months,\n COUNT(*) AS total_orders,\n SUM(CASE WHEN typeof(amount) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_orders\n FROM orders WHERE order_date >= '2024-01-01' AND order_date < '2026-07-01'\n GROUP BY quarter\n), c AS (\n SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(cost_of_sales) AS cost_of_sales, SUM(selling_admin) AS selling_admin,\n SUM(research_development) AS research_development, COUNT(DISTINCT month) AS cost_months,\n COUNT(*) AS total_costs,\n SUM(CASE WHEN typeof(cost_of_sales) IN ('integer','real')\n AND typeof(selling_admin) IN ('integer','real')\n AND typeof(research_development) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_costs\n FROM monthly_costs WHERE month >= '2024-01' AND month < '2026-07'\n GROUP BY quarter\n)\nSELECT r.quarter, revenue, order_months, cost_of_sales, selling_admin,\n research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs\nFROM r LEFT JOIN c ON r.quarter=c.quarter ORDER BY r.quarter"
+      },
+      "raw": "quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs\n2024Q1 | 160951.90 | 3 | 103757.10 | 30671.80 | 6609.60 | 3 | 154 | 154 | 3 | 3\n2024Q2 | 177799.30 | 3 | 117699.30 | 32885.60 | 6641.90 | 3 | 180 | 180 | 3 | 3\n2024Q3 | 213888.60 | 3 | 137392.90 | 31855.10 | 6959.70 | 3 | 216 | 216 | 3 | 3\n2024Q4 | 236859.00 | 3 | 156716.70 | 32034.60 | 6881.70 | 3 | 249 | 249 | 3 | 3\n2025Q1 | 186232.60 | 3 | 126836.80 | 28014.40 | 7186.90 | 3 | 191 | 191 | 3 | 3\n2025Q2 | 218365.00 | 3 | 147022.80 | 29114.40 | 7306.40 | 3 | 228 | 228 | 3 | 3\n2025Q3 | 215559.30 | 3 | 148179.20 | 29094.50 | 7135.30 | 3 | 210 | 210 | 3 | 3\n2025Q4 | 192630.40 | 3 | 130225.90 | 29581.30 | 7509.80 | 3 | 205 | 205 | 3 | 3\n2026Q1 | 201132.60 | 3 | 130968.30 | 36105.80 | 7388.20 | 3 | 203 | 203 | 3 | 3\n2026Q2 | 227662.10 | 3 | 146355.70 | 36301.00 | 7467.00 | 3 | 230 | 230 | 3 | 3"
+    },
+    "returns_source": {
+      "evidence_id": "review:returns:cobalt_holdings",
+      "company_id": "cobalt_holdings",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter, COUNT(*) AS rows, COUNT(DISTINCT month) AS months, SUM(units_shipped) AS shipped, SUM(units_returned) AS returned, SUM(CASE WHEN typeof(units_shipped) IN ('integer','real') AND typeof(units_returned) IN ('integer','real') AND units_shipped >= 0 AND units_returned >= 0 AND units_returned <= units_shipped THEN 1 ELSE 0 END) AS valid_rows, ROUND(100.0*SUM(units_returned)/NULLIF(SUM(units_shipped),0),6) AS return_rate_pct FROM returns WHERE month >= '2024-01' AND month < '2026-07' GROUP BY quarter ORDER BY quarter"
+      },
+      "raw": "quarter | rows | months | shipped | returned | valid_rows | return_rate_pct\n2024Q1 | 3 | 3 | 3500 | 73 | 3 | 2.09\n2024Q2 | 3 | 3 | 4038 | 91 | 3 | 2.25\n2024Q3 | 3 | 3 | 4685 | 99 | 3 | 2.11\n2024Q4 | 3 | 3 | 5265 | 108 | 3 | 2.05\n2025Q1 | 3 | 3 | 4059 | 85 | 3 | 2.09\n2025Q2 | 3 | 3 | 4774 | 104 | 3 | 2.18\n2025Q3 | 3 | 3 | 4685 | 311 | 3 | 6.64\n2025Q4 | 3 | 3 | 4164 | 89 | 3 | 2.14\n2026Q1 | 3 | 3 | 4523 | 92 | 3 | 2.03\n2026Q2 | 3 | 3 | 4992 | 100 | 3 | 2.00"
+    }
+  },
+  "kestrel_technologies": {
+    "trace_id": "d9ed3230cb6bca40a86ea22f4d5efff7",
+    "transcripts": [
+      {
+        "period": "2025Q3",
+        "name": "earnings_call_2025q3.md",
+        "source": {
+          "evidence_id": "doc:2025Q3",
+          "company_id": "kestrel_technologies",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q3.md"
+          },
+          "raw": "# Kestrel Technologies: earnings call, third quarter 2025\n\nDate: 2025-10-29\n\nTessa Hartmann (Chief Executive): Revenue for the quarter was USD 149.9 million. Order books are in line with our plan.\n\nLeon Hartmann (Chief Financial Officer): Freight costs eased a little. Returns stayed low and product quality was steady.\n\nAnalyst: Will you keep investing in new products?\n\nTessa Hartmann: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2025Q4",
+        "name": "earnings_call_2025q4.md",
+        "source": {
+          "evidence_id": "doc:2025Q4",
+          "company_id": "kestrel_technologies",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q4.md"
+          },
+          "raw": "# Kestrel Technologies: earnings call, fourth quarter 2025\n\nDate: 2026-02-25\n\nTessa Hartmann (Chief Executive): Revenue for the quarter was USD 134.4 million. Order books are in line with our plan.\n\nLeon Hartmann (Chief Financial Officer): Freight costs eased a little. Product quality remained excellent and returns were negligible.\n\nAnalyst: Will you keep investing in new products?\n\nTessa Hartmann: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2026Q1",
+        "name": "earnings_call_2026q1.md",
+        "source": {
+          "evidence_id": "doc:2026Q1",
+          "company_id": "kestrel_technologies",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q1.md"
+          },
+          "raw": "# Kestrel Technologies: earnings call, first quarter 2026\n\nDate: 2026-04-28\n\nTessa Hartmann (Chief Executive): Revenue for the quarter was USD 142.7 million. Order books are in line with our plan.\n\nLeon Hartmann (Chief Financial Officer): We kept a close eye on costs across our plants. Returns stayed low and product quality was steady.\n\nAnalyst: Will you keep investing in new products?\n\nTessa Hartmann: We invest for the long term and our research budget reflects that.\n"
+        }
+      },
+      {
+        "period": "2026Q2",
+        "name": "earnings_call_2026q2.md",
+        "source": {
+          "evidence_id": "doc:2026Q2",
+          "company_id": "kestrel_technologies",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q2.md"
+          },
+          "raw": "# Kestrel Technologies: earnings call, second quarter 2026\n\nDate: 2026-07-29\n\nTessa Hartmann (Chief Executive): Revenue for the quarter was USD 157.2 million. Order books are in line with our plan.\n\nLeon Hartmann (Chief Financial Officer): We kept a close eye on costs across our plants. Returns stayed low and product quality was steady.\n\nAnalyst: How do you think about research spending?\n\nTessa Hartmann: We invest for the long term and our research budget reflects that.\n"
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "evidence_id": "2026Q1:revenue:level",
+        "period": "2026Q1",
+        "metric": "revenue",
+        "value": "142742.30",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": null,
+        "comparison_value": null,
+        "absolute_change": null,
+        "percentage_change": null,
+        "comparison_status": "level"
+      },
+      {
+        "evidence_id": "2026Q1:revenue:qoq",
+        "period": "2026Q1",
+        "metric": "revenue",
+        "value": "142742.30",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2025Q4",
+        "comparison_value": "134384.30",
+        "absolute_change": "8358.00",
+        "percentage_change": "6.219476531112637413745504497",
+        "comparison_status": "available"
+      },
+      {
+        "evidence_id": "2026Q1:revenue:yoy",
+        "period": "2026Q1",
+        "metric": "revenue",
+        "value": "142742.30",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2025Q1",
+        "comparison_value": "138379.30",
+        "absolute_change": "4363.00",
+        "percentage_change": "3.152928219755411394623328778",
+        "comparison_status": "available"
+      }
+    ],
+    "financial_source": {
+      "evidence_id": "point14:financial_sql",
+      "company_id": "kestrel_technologies",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "WITH r AS (\n SELECT substr(order_date,1,4)||'Q'||((CAST(substr(order_date,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(amount) AS revenue, COUNT(DISTINCT substr(order_date,1,7)) AS order_months,\n COUNT(*) AS total_orders,\n SUM(CASE WHEN typeof(amount) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_orders\n FROM orders WHERE order_date >= '2024-01-01' AND order_date < '2026-07-01'\n GROUP BY quarter\n), c AS (\n SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(cost_of_sales) AS cost_of_sales, SUM(selling_admin) AS selling_admin,\n SUM(research_development) AS research_development, COUNT(DISTINCT month) AS cost_months,\n COUNT(*) AS total_costs,\n SUM(CASE WHEN typeof(cost_of_sales) IN ('integer','real')\n AND typeof(selling_admin) IN ('integer','real')\n AND typeof(research_development) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_costs\n FROM monthly_costs WHERE month >= '2024-01' AND month < '2026-07'\n GROUP BY quarter\n)\nSELECT r.quarter, revenue, order_months, cost_of_sales, selling_admin,\n research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs\nFROM r LEFT JOIN c ON r.quarter=c.quarter ORDER BY r.quarter"
+      },
+      "raw": "quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs\n2024Q1 | 132792.50 | 3 | 92428.30 | 23225.20 | 4357.90 | 3 | 203 | 203 | 3 | 3\n2024Q2 | 150924.60 | 3 | 105867.60 | 23773.50 | 4548.40 | 3 | 220 | 220 | 3 | 3\n2024Q3 | 150235.00 | 3 | 106515.30 | 24444.70 | 4537.30 | 3 | 250 | 250 | 3 | 3\n2024Q4 | 137173.20 | 3 | 96615.30 | 24004.20 | 4541.90 | 3 | 235 | 235 | 3 | 3\n2025Q1 | 138379.30 | 3 | 99618.90 | 20416.80 | 4714.70 | 3 | 224 | 224 | 3 | 3\n2025Q2 | 155870.50 | 3 | 111593.60 | 22161.70 | 4714.30 | 3 | 245 | 245 | 3 | 3\n2025Q3 | 149939.90 | 3 | 108812.60 | 21048.20 | 4806.50 | 3 | 231 | 231 | 3 | 3\n2025Q4 | 134384.30 | 3 | 98051.20 | 19654.90 | 5050.80 | 3 | 203 | 203 | 3 | 3\n2026Q1 | 142742.30 | 3 | 102087.30 | 22371.90 | 5092.80 | 3 | 221 | 221 | 3 | 3\n2026Q2 | 157210.50 | 3 | 112774.30 | 22030.50 | 5120.00 | 3 | 243 | 243 | 3 | 3"
+    },
+    "returns_source": {
+      "evidence_id": "review:returns:kestrel_technologies",
+      "company_id": "kestrel_technologies",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter, COUNT(*) AS rows, COUNT(DISTINCT month) AS months, SUM(units_shipped) AS shipped, SUM(units_returned) AS returned, SUM(CASE WHEN typeof(units_shipped) IN ('integer','real') AND typeof(units_returned) IN ('integer','real') AND units_shipped >= 0 AND units_returned >= 0 AND units_returned <= units_shipped THEN 1 ELSE 0 END) AS valid_rows, ROUND(100.0*SUM(units_returned)/NULLIF(SUM(units_shipped),0),6) AS return_rate_pct FROM returns WHERE month >= '2024-01' AND month < '2026-07' GROUP BY quarter ORDER BY quarter"
+      },
+      "raw": "quarter | rows | months | shipped | returned | valid_rows | return_rate_pct\n2024Q1 | 3 | 3 | 6951 | 118 | 3 | 1.70\n2024Q2 | 3 | 3 | 7879 | 134 | 3 | 1.70\n2024Q3 | 3 | 3 | 7722 | 131 | 3 | 1.70\n2024Q4 | 3 | 3 | 7138 | 121 | 3 | 1.70\n2025Q1 | 3 | 3 | 7079 | 119 | 3 | 1.68\n2025Q2 | 3 | 3 | 7980 | 134 | 3 | 1.68\n2025Q3 | 3 | 3 | 7757 | 130 | 3 | 1.68\n2025Q4 | 3 | 3 | 7018 | 119 | 3 | 1.70\n2026Q1 | 3 | 3 | 7432 | 378 | 3 | 5.09\n2026Q2 | 3 | 3 | 8231 | 133 | 3 | 1.62"
+    }
+  },
+  "dunmore_holdings": {
+    "trace_id": "4188339ba382c9fa411ac4a0325885be",
+    "transcripts": [
+      {
+        "period": "2025Q3",
+        "name": "earnings_call_2025q3.md",
+        "source": {
+          "evidence_id": "doc:2025Q3",
+          "company_id": "dunmore_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q3.md"
+          },
+          "raw": "# Dunmore Holdings: earnings call, third quarter 2025\n\nDate: 2025-10-29\n\nDaniel Lau (Chief Executive): Revenue for the quarter was USD 245.7 million. Order books are in line with our plan.\n\nHana Lau (Chief Financial Officer): Freight costs eased a little. Returns rose sharply this quarter because of a faulty batch of camera module parts. We are replacing every affected unit at our own cost.\n\nAnalyst: Will you keep investing in new products?\n\nDaniel Lau: We invest for the long term and our research budget reflects that.\n"
+        }
+      },
+      {
+        "period": "2025Q4",
+        "name": "earnings_call_2025q4.md",
+        "source": {
+          "evidence_id": "doc:2025Q4",
+          "company_id": "dunmore_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q4.md"
+          },
+          "raw": "# Dunmore Holdings: earnings call, fourth quarter 2025\n\nDate: 2026-02-25\n\nDaniel Lau (Chief Executive): Revenue for the quarter was USD 222.9 million. Demand from automation vendor customers stayed healthy.\n\nHana Lau (Chief Financial Officer): Freight costs eased a little. Returns stayed low and product quality was steady.\n\nAnalyst: Will you keep investing in new products?\n\nDaniel Lau: We invest for the long term and our research budget reflects that.\n"
+        }
+      },
+      {
+        "period": "2026Q1",
+        "name": "earnings_call_2026q1.md",
+        "source": {
+          "evidence_id": "doc:2026Q1",
+          "company_id": "dunmore_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q1.md"
+          },
+          "raw": "# Dunmore Holdings: earnings call, first quarter 2026\n\nDate: 2026-04-28\n\nDaniel Lau (Chief Executive): Revenue for the quarter was USD 265.7 million. Order books are in line with our plan.\n\nHana Lau (Chief Financial Officer): Freight costs eased a little. Product quality remained excellent and returns were negligible.\n\nAnalyst: Will you keep investing in new products?\n\nDaniel Lau: We invest for the long term and our research budget reflects that.\n"
+        }
+      },
+      {
+        "period": "2026Q2",
+        "name": "earnings_call_2026q2.md",
+        "source": {
+          "evidence_id": "doc:2026Q2",
+          "company_id": "dunmore_holdings",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q2.md"
+          },
+          "raw": "# Dunmore Holdings: earnings call, second quarter 2026\n\nDate: 2026-07-29\n\nDaniel Lau (Chief Executive): Revenue for the quarter was USD 278.6 million. Demand from carmaker customers stayed healthy.\n\nHana Lau (Chief Financial Officer): We kept a close eye on costs across our plants. Product quality remained excellent and returns were negligible.\n\nAnalyst: How do you think about research spending?\n\nDaniel Lau: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "evidence_id": "2026Q1:revenue:level",
+        "period": "2026Q1",
+        "metric": "revenue",
+        "value": "248068.00",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": null,
+        "comparison_value": null,
+        "absolute_change": null,
+        "percentage_change": null,
+        "comparison_status": "level"
+      },
+      {
+        "evidence_id": "2026Q1:revenue:qoq",
+        "period": "2026Q1",
+        "metric": "revenue",
+        "value": "248068.00",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2025Q4",
+        "comparison_value": "222926.70",
+        "absolute_change": "25141.30",
+        "percentage_change": "11.27783257904952614469240338",
+        "comparison_status": "available"
+      },
+      {
+        "evidence_id": "2026Q1:revenue:yoy",
+        "period": "2026Q1",
+        "metric": "revenue",
+        "value": "248068.00",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2025Q1",
+        "comparison_value": "229427.70",
+        "absolute_change": "18640.30",
+        "percentage_change": "8.124694620571099304922640117",
+        "comparison_status": "available"
+      }
+    ],
+    "financial_source": {
+      "evidence_id": "point14:financial_sql",
+      "company_id": "dunmore_holdings",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "WITH r AS (\n SELECT substr(order_date,1,4)||'Q'||((CAST(substr(order_date,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(amount) AS revenue, COUNT(DISTINCT substr(order_date,1,7)) AS order_months,\n COUNT(*) AS total_orders,\n SUM(CASE WHEN typeof(amount) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_orders\n FROM orders WHERE order_date >= '2024-01-01' AND order_date < '2026-07-01'\n GROUP BY quarter\n), c AS (\n SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(cost_of_sales) AS cost_of_sales, SUM(selling_admin) AS selling_admin,\n SUM(research_development) AS research_development, COUNT(DISTINCT month) AS cost_months,\n COUNT(*) AS total_costs,\n SUM(CASE WHEN typeof(cost_of_sales) IN ('integer','real')\n AND typeof(selling_admin) IN ('integer','real')\n AND typeof(research_development) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_costs\n FROM monthly_costs WHERE month >= '2024-01' AND month < '2026-07'\n GROUP BY quarter\n)\nSELECT r.quarter, revenue, order_months, cost_of_sales, selling_admin,\n research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs\nFROM r LEFT JOIN c ON r.quarter=c.quarter ORDER BY r.quarter"
+      },
+      "raw": "quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs\n2024Q1 | 205093.20 | 3 | 116893.70 | 44172.30 | 16086.80 | 3 | 210 | 210 | 3 | 3\n2024Q2 | 235635.00 | 3 | 138809.80 | 42796.90 | 16852.80 | 3 | 245 | 245 | 3 | 3\n2024Q3 | 218189.10 | 3 | 127387.40 | 42381.00 | 16784.20 | 3 | 223 | 223 | 3 | 3\n2024Q4 | 197552.30 | 3 | 115723.20 | 42284.90 | 17303.60 | 3 | 202 | 202 | 3 | 3\n2025Q1 | 229427.70 | 3 | 129354.70 | 49482.20 | 16949.60 | 3 | 226 | 226 | 3 | 3\n2025Q2 | 252568.50 | 3 | 142480.90 | 50617.20 | 17038.70 | 3 | 252 | 252 | 3 | 3\n2025Q3 | 245672.40 | 3 | 139234.20 | 48128.40 | 17957.60 | 3 | 256 | 256 | 3 | 3\n2025Q4 | 222926.70 | 3 | 126674.70 | 51419.00 | 18430.20 | 3 | 234 | 234 | 3 | 3\n2026Q1 | 248068.00 | 3 | 140464.40 | 51294.10 | 18661.30 | 3 | 258 | 258 | 3 | 3\n2026Q2 | 278611.20 | 3 | 161195.60 | 55824.10 | 18650.70 | 3 | 273 | 273 | 3 | 3"
+    },
+    "returns_source": {
+      "evidence_id": "review:returns:dunmore_holdings",
+      "company_id": "dunmore_holdings",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter, COUNT(*) AS rows, COUNT(DISTINCT month) AS months, SUM(units_shipped) AS shipped, SUM(units_returned) AS returned, SUM(CASE WHEN typeof(units_shipped) IN ('integer','real') AND typeof(units_returned) IN ('integer','real') AND units_shipped >= 0 AND units_returned >= 0 AND units_returned <= units_shipped THEN 1 ELSE 0 END) AS valid_rows, ROUND(100.0*SUM(units_returned)/NULLIF(SUM(units_shipped),0),6) AS return_rate_pct FROM returns WHERE month >= '2024-01' AND month < '2026-07' GROUP BY quarter ORDER BY quarter"
+      },
+      "raw": "quarter | rows | months | shipped | returned | valid_rows | return_rate_pct\n2024Q1 | 3 | 3 | 8046 | 178 | 3 | 2.21\n2024Q2 | 3 | 3 | 9073 | 218 | 3 | 2.40\n2024Q3 | 3 | 3 | 8566 | 194 | 3 | 2.26\n2024Q4 | 3 | 3 | 7719 | 177 | 3 | 2.29\n2025Q1 | 3 | 3 | 8789 | 212 | 3 | 2.41\n2025Q2 | 3 | 3 | 10232 | 235 | 3 | 2.30\n2025Q3 | 3 | 3 | 9615 | 716 | 3 | 7.45\n2025Q4 | 3 | 3 | 8737 | 199 | 3 | 2.28\n2026Q1 | 3 | 3 | 9865 | 226 | 3 | 2.29\n2026Q2 | 3 | 3 | 10978 | 257 | 3 | 2.34"
+    }
+  },
+  "ashgrove_labs": {
+    "trace_id": "2e0073c85ed7d6c6b2e8cd5bab3945a4",
+    "transcripts": [
+      {
+        "period": "2025Q3",
+        "name": "earnings_call_2025q3.md",
+        "source": {
+          "evidence_id": "doc:2025Q3",
+          "company_id": "ashgrove_labs",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q3.md"
+          },
+          "raw": "# Ashgrove Labs: earnings call, third quarter 2025\n\nDate: 2025-10-29\n\nSamuel Hartmann (Chief Executive): Revenue for the quarter was USD 253.3 million. Order books are in line with our plan.\n\nGrace Novak (Chief Financial Officer): Freight costs eased a little. Product quality remained excellent and returns were negligible.\n\nAnalyst: How do you think about research spending?\n\nSamuel Hartmann: We invest for the long term and our research budget reflects that.\n"
+        }
+      },
+      {
+        "period": "2025Q4",
+        "name": "earnings_call_2025q4.md",
+        "source": {
+          "evidence_id": "doc:2025Q4",
+          "company_id": "ashgrove_labs",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q4.md"
+          },
+          "raw": "# Ashgrove Labs: earnings call, fourth quarter 2025\n\nDate: 2026-02-25\n\nSamuel Hartmann (Chief Executive): Revenue for the quarter was USD 229.2 million. Order books are in line with our plan.\n\nGrace Novak (Chief Financial Officer): We kept a close eye on costs across our plants. Product quality remained excellent and returns were negligible.\n\nAnalyst: How do you think about research spending?\n\nSamuel Hartmann: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2026Q1",
+        "name": "earnings_call_2026q1.md",
+        "source": {
+          "evidence_id": "doc:2026Q1",
+          "company_id": "ashgrove_labs",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q1.md"
+          },
+          "raw": "# Ashgrove Labs: earnings call, first quarter 2026\n\nDate: 2026-04-28\n\nSamuel Hartmann (Chief Executive): Revenue for the quarter was USD 257.6 million. Order books are in line with our plan.\n\nGrace Novak (Chief Financial Officer): Freight costs eased a little. Returns rose sharply this quarter because of a faulty batch of welding robot parts. We are replacing every affected unit at our own cost.\n\nAnalyst: Will you keep investing in new products?\n\nSamuel Hartmann: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2026Q2",
+        "name": "earnings_call_2026q2.md",
+        "source": {
+          "evidence_id": "doc:2026Q2",
+          "company_id": "ashgrove_labs",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q2.md"
+          },
+          "raw": "# Ashgrove Labs: earnings call, second quarter 2026\n\nDate: 2026-07-29\n\nSamuel Hartmann (Chief Executive): Revenue for the quarter was USD 290.5 million. Order books are in line with our plan.\n\nGrace Novak (Chief Financial Officer): We kept a close eye on costs across our plants. Product quality remained excellent and returns were negligible.\n\nAnalyst: Will you keep investing in new products?\n\nSamuel Hartmann: We invest for the long term and our research budget reflects that.\n"
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "evidence_id": "2025Q4:revenue:level",
+        "period": "2025Q4",
+        "metric": "revenue",
+        "value": "229152.60",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": null,
+        "comparison_value": null,
+        "absolute_change": null,
+        "percentage_change": null,
+        "comparison_status": "level"
+      },
+      {
+        "evidence_id": "2025Q4:revenue:qoq",
+        "period": "2025Q4",
+        "metric": "revenue",
+        "value": "229152.60",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2025Q3",
+        "comparison_value": "253302.40",
+        "absolute_change": "-24149.80",
+        "percentage_change": "-9.533979938603029422540015412",
+        "comparison_status": "available"
+      },
+      {
+        "evidence_id": "2025Q4:revenue:yoy",
+        "period": "2025Q4",
+        "metric": "revenue",
+        "value": "229152.60",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2024Q4",
+        "comparison_value": "199430.20",
+        "absolute_change": "29722.40",
+        "percentage_change": "14.90366052884668420329518799",
+        "comparison_status": "available"
+      }
+    ],
+    "financial_source": {
+      "evidence_id": "point14:financial_sql",
+      "company_id": "ashgrove_labs",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "WITH r AS (\n SELECT substr(order_date,1,4)||'Q'||((CAST(substr(order_date,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(amount) AS revenue, COUNT(DISTINCT substr(order_date,1,7)) AS order_months,\n COUNT(*) AS total_orders,\n SUM(CASE WHEN typeof(amount) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_orders\n FROM orders WHERE order_date >= '2024-01-01' AND order_date < '2026-07-01'\n GROUP BY quarter\n), c AS (\n SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(cost_of_sales) AS cost_of_sales, SUM(selling_admin) AS selling_admin,\n SUM(research_development) AS research_development, COUNT(DISTINCT month) AS cost_months,\n COUNT(*) AS total_costs,\n SUM(CASE WHEN typeof(cost_of_sales) IN ('integer','real')\n AND typeof(selling_admin) IN ('integer','real')\n AND typeof(research_development) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_costs\n FROM monthly_costs WHERE month >= '2024-01' AND month < '2026-07'\n GROUP BY quarter\n)\nSELECT r.quarter, revenue, order_months, cost_of_sales, selling_admin,\n research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs\nFROM r LEFT JOIN c ON r.quarter=c.quarter ORDER BY r.quarter"
+      },
+      "raw": "quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs\n2024Q1 | 198876.70 | 3 | 122111.80 | 37895.50 | 11357.40 | 3 | 215 | 215 | 3 | 3\n2024Q2 | 228993.30 | 3 | 139308.20 | 39048.40 | 11853.20 | 3 | 249 | 249 | 3 | 3\n2024Q3 | 222748.20 | 3 | 138421.80 | 39983.70 | 11566.00 | 3 | 238 | 238 | 3 | 3\n2024Q4 | 199430.20 | 3 | 122914.30 | 40366.60 | 11995.90 | 3 | 218 | 218 | 3 | 3\n2025Q1 | 219582.70 | 3 | 128635.80 | 55899.00 | 11913.20 | 3 | 234 | 234 | 3 | 3\n2025Q2 | 253753.60 | 3 | 146453.40 | 55878.50 | 12393.30 | 3 | 253 | 253 | 3 | 3\n2025Q3 | 253302.40 | 3 | 149214.90 | 54269.70 | 12838.10 | 3 | 276 | 276 | 3 | 3\n2025Q4 | 229152.60 | 3 | 131488.30 | 56119.50 | 13016.30 | 3 | 243 | 243 | 3 | 3\n2026Q1 | 257562.50 | 3 | 157435.10 | 56445.60 | 13187.40 | 3 | 285 | 285 | 3 | 3\n2026Q2 | 290536.70 | 3 | 180975.10 | 56383.60 | 12867.70 | 3 | 308 | 308 | 3 | 3"
+    },
+    "returns_source": {
+      "evidence_id": "review:returns:ashgrove_labs",
+      "company_id": "ashgrove_labs",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter, COUNT(*) AS rows, COUNT(DISTINCT month) AS months, SUM(units_shipped) AS shipped, SUM(units_returned) AS returned, SUM(CASE WHEN typeof(units_shipped) IN ('integer','real') AND typeof(units_returned) IN ('integer','real') AND units_shipped >= 0 AND units_returned >= 0 AND units_returned <= units_shipped THEN 1 ELSE 0 END) AS valid_rows, ROUND(100.0*SUM(units_returned)/NULLIF(SUM(units_shipped),0),6) AS return_rate_pct FROM returns WHERE month >= '2024-01' AND month < '2026-07' GROUP BY quarter ORDER BY quarter"
+      },
+      "raw": "quarter | rows | months | shipped | returned | valid_rows | return_rate_pct\n2024Q1 | 3 | 3 | 7660 | 145 | 3 | 1.89\n2024Q2 | 3 | 3 | 9262 | 182 | 3 | 1.97\n2024Q3 | 3 | 3 | 8675 | 174 | 3 | 2.01\n2024Q4 | 3 | 3 | 7925 | 152 | 3 | 1.92\n2025Q1 | 3 | 3 | 8273 | 157 | 3 | 1.90\n2025Q2 | 3 | 3 | 10021 | 199 | 3 | 1.99\n2025Q3 | 3 | 3 | 9924 | 192 | 3 | 1.93\n2025Q4 | 3 | 3 | 8938 | 185 | 3 | 2.07\n2026Q1 | 3 | 3 | 9785 | 547 | 3 | 5.59\n2026Q2 | 3 | 3 | 11355 | 217 | 3 | 1.91"
+    }
+  },
+  "aurel_systems": {
+    "trace_id": "32df7a90850d27d7013c2dccdd38b7fa",
+    "transcripts": [
+      {
+        "period": "2025Q3",
+        "name": "earnings_call_2025q3.md",
+        "source": {
+          "evidence_id": "doc:2025Q3",
+          "company_id": "aurel_systems",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q3.md"
+          },
+          "raw": "# Aurel Systems: earnings call, third quarter 2025\n\nDate: 2025-10-29\n\nTessa Novak (Chief Executive): Revenue for the quarter was USD 72.1 million. Demand from drug packer customers stayed healthy.\n\nVictor Ng (Chief Financial Officer): Freight costs eased a little. Product quality remained excellent and returns were negligible.\n\nAnalyst: Will you keep investing in new products?\n\nTessa Novak: We invest for the long term and our research budget reflects that.\n"
+        }
+      },
+      {
+        "period": "2025Q4",
+        "name": "earnings_call_2025q4.md",
+        "source": {
+          "evidence_id": "doc:2025Q4",
+          "company_id": "aurel_systems",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2025q4.md"
+          },
+          "raw": "# Aurel Systems: earnings call, fourth quarter 2025\n\nDate: 2026-02-25\n\nTessa Novak (Chief Executive): Revenue for the quarter was USD 64.0 million. Demand from cosmetics brand customers stayed healthy.\n\nVictor Ng (Chief Financial Officer): We kept a close eye on costs across our plants. Returns stayed low and product quality was steady.\n\nAnalyst: Will you keep investing in new products?\n\nTessa Novak: Research is the engine of this company and we fund it accordingly.\n"
+        }
+      },
+      {
+        "period": "2026Q1",
+        "name": "earnings_call_2026q1.md",
+        "source": {
+          "evidence_id": "doc:2026Q1",
+          "company_id": "aurel_systems",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q1.md"
+          },
+          "raw": "# Aurel Systems: earnings call, first quarter 2026\n\nDate: 2026-04-28\n\nTessa Novak (Chief Executive): Revenue for the quarter was USD 69.1 million. Order books are in line with our plan.\n\nVictor Ng (Chief Financial Officer): We kept a close eye on costs across our plants. Product quality remained excellent and returns were negligible.\n\nAnalyst: Will you keep investing in new products?\n\nTessa Novak: We invest for the long term and our research budget reflects that.\n"
+        }
+      },
+      {
+        "period": "2026Q2",
+        "name": "earnings_call_2026q2.md",
+        "source": {
+          "evidence_id": "doc:2026Q2",
+          "company_id": "aurel_systems",
+          "tool": "read_document",
+          "arguments": {
+            "name": "earnings_call_2026q2.md"
+          },
+          "raw": "# Aurel Systems: earnings call, second quarter 2026\n\nDate: 2026-07-29\n\nTessa Novak (Chief Executive): Revenue for the quarter was USD 75.5 million. Order books are in line with our plan.\n\nVictor Ng (Chief Financial Officer): We kept a close eye on costs across our plants. Returns stayed low and product quality was steady.\n\nAnalyst: How do you think about research spending?\n\nTessa Novak: We invest for the long term and our research budget reflects that.\n"
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "evidence_id": "2025Q4:operating_profit:level",
+        "period": "2025Q4",
+        "metric": "operating_profit",
+        "value": "7537.50",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": null,
+        "comparison_value": null,
+        "absolute_change": null,
+        "percentage_change": null,
+        "comparison_status": "level"
+      },
+      {
+        "evidence_id": "2025Q4:operating_profit:qoq",
+        "period": "2025Q4",
+        "metric": "operating_profit",
+        "value": "7537.50",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2025Q3",
+        "comparison_value": "10223.10",
+        "absolute_change": "-2685.60",
+        "percentage_change": "-26.26991812659565102561845233",
+        "comparison_status": "available"
+      },
+      {
+        "evidence_id": "2025Q4:operating_profit:yoy",
+        "period": "2025Q4",
+        "metric": "operating_profit",
+        "value": "7537.50",
+        "unit": "USD_thousands",
+        "source_id": "point14:financial_sql",
+        "comparison_period": "2024Q4",
+        "comparison_value": "7598.60",
+        "absolute_change": "-61.10",
+        "percentage_change": "-0.8040954912747084989340141605",
+        "comparison_status": "available"
+      }
+    ],
+    "financial_source": {
+      "evidence_id": "point14:financial_sql",
+      "company_id": "aurel_systems",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "WITH r AS (\n SELECT substr(order_date,1,4)||'Q'||((CAST(substr(order_date,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(amount) AS revenue, COUNT(DISTINCT substr(order_date,1,7)) AS order_months,\n COUNT(*) AS total_orders,\n SUM(CASE WHEN typeof(amount) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_orders\n FROM orders WHERE order_date >= '2024-01-01' AND order_date < '2026-07-01'\n GROUP BY quarter\n), c AS (\n SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter,\n SUM(cost_of_sales) AS cost_of_sales, SUM(selling_admin) AS selling_admin,\n SUM(research_development) AS research_development, COUNT(DISTINCT month) AS cost_months,\n COUNT(*) AS total_costs,\n SUM(CASE WHEN typeof(cost_of_sales) IN ('integer','real')\n AND typeof(selling_admin) IN ('integer','real')\n AND typeof(research_development) IN ('integer','real') THEN 1 ELSE 0 END) AS valid_costs\n FROM monthly_costs WHERE month >= '2024-01' AND month < '2026-07'\n GROUP BY quarter\n)\nSELECT r.quarter, revenue, order_months, cost_of_sales, selling_admin,\n research_development, cost_months, valid_orders, total_orders, valid_costs, total_costs\nFROM r LEFT JOIN c ON r.quarter=c.quarter ORDER BY r.quarter"
+      },
+      "raw": "quarter | revenue | order_months | cost_of_sales | selling_admin | research_development | cost_months | valid_orders | total_orders | valid_costs | total_costs\n2024Q1 | 51073.60 | 3 | 32826.40 | 11787.20 | 3394.60 | 3 | 176 | 176 | 3 | 3\n2024Q2 | 60425.10 | 3 | 38825.50 | 11187.70 | 3328.40 | 3 | 222 | 222 | 3 | 3\n2024Q3 | 68149.70 | 3 | 43501.60 | 11148.60 | 3493.60 | 3 | 243 | 243 | 3 | 3\n2024Q4 | 64299.10 | 3 | 41841.50 | 11266.20 | 3592.80 | 3 | 231 | 231 | 3 | 3\n2025Q1 | 61895.60 | 3 | 41020.00 | 10825.60 | 3617.30 | 3 | 221 | 221 | 3 | 3\n2025Q2 | 71806.00 | 3 | 47348.90 | 10870.20 | 3716.70 | 3 | 249 | 249 | 3 | 3\n2025Q3 | 72084.90 | 3 | 46778.70 | 11445.20 | 3637.90 | 3 | 259 | 259 | 3 | 3\n2025Q4 | 63976.90 | 3 | 41322.50 | 11388.00 | 3728.90 | 3 | 219 | 219 | 3 | 3\n2026Q1 | 69105.30 | 3 | 45402.50 | 12781.30 | 3726.50 | 3 | 253 | 253 | 3 | 3\n2026Q2 | 75464.70 | 3 | 48551.50 | 12147.30 | 3920.30 | 3 | 280 | 280 | 3 | 3"
+    },
+    "returns_source": {
+      "evidence_id": "review:returns:aurel_systems",
+      "company_id": "aurel_systems",
+      "tool": "sql_query",
+      "arguments": {
+        "query": "SELECT substr(month,1,4)||'Q'||((CAST(substr(month,6,2) AS INTEGER)+2)/3) AS quarter, COUNT(*) AS rows, COUNT(DISTINCT month) AS months, SUM(units_shipped) AS shipped, SUM(units_returned) AS returned, SUM(CASE WHEN typeof(units_shipped) IN ('integer','real') AND typeof(units_returned) IN ('integer','real') AND units_shipped >= 0 AND units_returned >= 0 AND units_returned <= units_shipped THEN 1 ELSE 0 END) AS valid_rows, ROUND(100.0*SUM(units_returned)/NULLIF(SUM(units_shipped),0),6) AS return_rate_pct FROM returns WHERE month >= '2024-01' AND month < '2026-07' GROUP BY quarter ORDER BY quarter"
+      },
+      "raw": "quarter | rows | months | shipped | returned | valid_rows | return_rate_pct\n2024Q1 | 3 | 3 | 6509 | 154 | 3 | 2.37\n2024Q2 | 3 | 3 | 7475 | 175 | 3 | 2.34\n2024Q3 | 3 | 3 | 8505 | 204 | 3 | 2.40\n2024Q4 | 3 | 3 | 8034 | 196 | 3 | 2.44\n2025Q1 | 3 | 3 | 7746 | 188 | 3 | 2.43\n2025Q2 | 3 | 3 | 8858 | 204 | 3 | 2.30\n2025Q3 | 3 | 3 | 9053 | 209 | 3 | 2.31\n2025Q4 | 3 | 3 | 8046 | 189 | 3 | 2.35\n2026Q1 | 3 | 3 | 8748 | 202 | 3 | 2.31\n2026Q2 | 3 | 3 | 9616 | 233 | 3 | 2.42"
+    }
+  }
+}

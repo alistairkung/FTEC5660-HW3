@@ -29,6 +29,9 @@ def score_results(results: list[TransparencyResult], expected: dict) -> dict:
     return {
         'companies': len(results), 'labelled_companies': len(labelled),
         'total_correct': sum(result.verdict == label for result, label in labelled),
+        'grounded_correct': sum(result.verdict == label for result, label in labelled),
+        'public_adapter_correct': sum(result.public_result()['points'][14] == label for result, label in labelled),
+        'public_fallback_credit': sum(result.verdict is None and label == 'FAIL' for result, label in labelled),
         'pass_recall': recalls['PASS'], 'fail_recall': recalls['FAIL'],
         'balanced_accuracy': (sum(recalls.values()) / 2 if None not in recalls.values() else None),
         'incorrect_companies': [result.company_id for result, _ in disagreements],
@@ -36,9 +39,14 @@ def score_results(results: list[TransparencyResult], expected: dict) -> dict:
                           'stage': result.error_stage, 'status': result.status,
                           'attribution': {category: None for category in REVIEW_CATEGORIES},
                           'review_status': 'requires evidence review'} for result, label in disagreements],
+        # Compatibility field: all unresolved verdicts, including semantic abstention.
         'failures': [{'company': result.company_id, 'stage': result.error_stage,
                       'status': result.status, 'error_type': result.error_type}
                      for result in results if result.verdict is None],
+        'semantic_abstentions': [result.company_id for result in results if result.status == 'insufficient_evidence'],
+        'operational_failures': [{'company': result.company_id, 'stage': result.error_stage,
+                      'status': result.status, 'error_type': result.error_type}
+                     for result in results if result.verdict is None and result.status != 'insufficient_evidence'],
         'sql_failures': sum(r.verdict is None and r.error_stage == 'financial-extraction' for r in results),
         'extraction_failures': sum(r.verdict is None and r.error_stage in
                                    ('document-retrieval', 'claim-extraction') for r in results),

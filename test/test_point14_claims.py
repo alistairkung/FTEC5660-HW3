@@ -106,3 +106,49 @@ class ClaimTests(unittest.IsolatedAsyncioTestCase):
                 self.assertIsNone(source_quotation(quotation, transcript))
         for quotation in ('Revenue declined.', 'We explained higher costs.'):
             self.assertEqual(source_quotation(quotation, transcript), quotation)
+
+    async def test_sourced_proposition_keeps_copied_value_unit_speaker_and_span(self):
+        import json
+        quote = 'Revenue for the quarter was USD 265.7 million.'
+        text = 'Date: 2025-10-29\n\nAlex Ng (Chief Executive): ' + quote
+        transcript = Transcript('2025Q3', 'earnings_call_2025q3.md', Source(
+            'doc:2025Q3', 'x', 'read_document', {'name': 'earnings_call_2025q3.md'}, text))
+        proposal = self.proposal(quotation=quote, proposition={
+            'subject': 'company', 'metric': 'revenue', 'period': '2025Q3',
+            'assertion_type': 'level', 'value_text': '265.7', 'unit': 'USD_millions',
+            'basis': 'level', 'comparator_period': None, 'direction': None,
+            'qualifiers': [], 'certainty': 'asserted'})
+        fake = AsyncMock()
+        fake.ainvoke.return_value = AIMessage(content=json.dumps(proposal))
+        claims = await ManagementClaimExtractor(ModelGateway(fake, Diagnostics())).extract((transcript,))
+        claim = claims[0]
+        self.assertEqual(str(claim.proposition.value), '265.7')
+        self.assertEqual(claim.proposition.unit, 'USD_millions')
+        self.assertEqual(claim.speaker, 'Alex Ng (Chief Executive)')
+        self.assertEqual(claim.company_id, 'x')
+        self.assertEqual(claim.communication_date, '2025-10-29')
+        self.assertEqual(text[claim.span_start:claim.span_end], quote)
+        # A copied number must actually occur in the selected quote.
+        proposal['claims'][0]['proposition']['value_text'] = '999.9'
+        fake.ainvoke.return_value = AIMessage(content=json.dumps(proposal))
+        with self.assertRaises(ValueError):
+            await ManagementClaimExtractor(ModelGateway(fake, Diagnostics())).extract((transcript,))
+        proposal['claims'][0]['proposition'].update(value_text='265.7',
+            measurement_definition='sales_revenue', definition_quotation=' ')
+        fake.ainvoke.return_value = AIMessage(content=json.dumps(proposal))
+        with self.assertRaises(ValueError):
+            await ManagementClaimExtractor(ModelGateway(fake, Diagnostics())).extract((transcript,))
+
+    async def test_numeric_token_keeps_literal_sign_and_percentage_point_unit(self):
+        import json
+        for quote, value, unit in (
+            ('Revenue decreased -5 percent quarter on quarter.', '5', 'percent'),
+            ('Operating margin decreased 5 percentage points quarter on quarter.', '5', 'percent'),
+        ):
+            transcript = Transcript('2025Q3', 'earnings_call_2025q3.md', Source(
+                'doc:2025Q3', 'x', 'read_document', {}, 'CEO: ' + quote))
+            proposal = self.proposal(quotation=quote, proposition={
+                'value_text': value, 'unit': unit, 'assertion_type': 'change'})
+            fake = AsyncMock(ainvoke=AsyncMock(return_value=AIMessage(content=json.dumps(proposal))))
+            with self.subTest(quote=quote), self.assertRaises(ValueError):
+                await ManagementClaimExtractor(ModelGateway(fake, Diagnostics())).extract((transcript,))

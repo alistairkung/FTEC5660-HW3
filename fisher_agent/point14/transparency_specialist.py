@@ -1,5 +1,6 @@
 """Independent, bounded Point 14 pipeline. No multi-point orchestration."""
 import asyncio
+from dataclasses import asdict
 from time import monotonic
 from typing import Any
 
@@ -7,6 +8,8 @@ from observability import Tracing
 from observability.tracing import current_tracing
 
 from .financial_evidence_extractor import FinancialEvidenceExtractor
+from .claim_evidence_matcher import evidence_facts
+from .disclosure_rules import communication_coverage, prepare_events
 from .management_claim_extractor import ManagementClaimExtractor
 from .model_gateway import ModelGateway
 from .records import EvidenceError, ModelOutputError, PERIODS, Source, Transcript, TransparencyResult
@@ -90,6 +93,11 @@ class TransparencySpecialist:
                 result.transcripts = tuple(transcripts)
             stage.update(output={'documents': [doc.name for doc in transcripts]})
         result.error_stage = 'claim-extraction'
+        # Prepare candidate events before any semantic matching or disclosure search.
+        result.facts = evidence_facts(result.financial)
+        result.events = prepare_events(result.facts)
+        result.coverage = communication_coverage(result.transcripts, measurements_complete=(
+            len(result.financial.returns) == 10 and all(r.rate_pct is not None for r in result.financial.returns)))
         with self.tracing.observation('point14.claim-extraction', company_id=company,
                                       fisher_point=14) as stage:
             result.claims = await ManagementClaimExtractor(gateway, self.tracing).extract(result.transcripts)
@@ -100,21 +108,15 @@ class TransparencySpecialist:
         result.error_stage = 'transparency-verification'
         with self.tracing.observation('point14.transparency-verification', company_id=company,
                                       fisher_point=14) as stage:
-            assessment = await verifier.verify(result.financial, result.claims, result.transcripts)
-            result.assessment = assessment.assessment
-            result.comparisons = tuple(item.model_dump() for item in assessment.comparisons)
-            stage.update(output=assessment.model_dump())
-        if assessment.assessment == 'UNCERTAIN':
-            result.error_stage = 'final-adjudication'
-            with self.tracing.observation('point14.final-adjudication', company_id=company,
-                                          fisher_point=14) as stage:
-                assessment = await verifier.adjudicate(result.financial, result.claims,
-                                                       assessment, result.transcripts)
-                stage.update(output=assessment.model_dump())
-        result.assessment = assessment.assessment
-        result.comparisons = tuple(item.model_dump() for item in assessment.comparisons)
-        reason = render_reason(assessment, result.financial, result.claims)
-        result.verdict = 'PASS' if assessment.assessment == 'TRANSPARENT' else 'FAIL'
-        result.status = 'adjudicated' if result.diagnostics.adjudications else 'assessed'
-        result.reason = reason
+            decision = await verifier.verify(result.financial, result.claims, result.transcripts)
+            result.decision = decision
+            result.assessment = decision.assessment
+            result.comparisons = tuple(asdict(item) for item in decision.matches)
+            stage.update(output=asdict(decision))
+        if decision.assessment == 'INSUFFICIENT_EVIDENCE':
+            result.status = 'insufficient_evidence'
+        else:
+            result.verdict = 'PASS' if decision.assessment == 'TRANSPARENT' else 'FAIL'
+            result.status = 'assessed'
+        result.reason = render_reason(decision, result.financial, result.claims)
         result.error_stage = None
