@@ -148,6 +148,17 @@ the normalizer and finite recovery feedback**, without adding calls or weakening
 source validation. No live semantic improvement has been demonstrated. See the
 [gate diagnosis](../evaluation/point14-option-c-gate.md); application code remains frozen.
 
+The subsequent normalization repair restored live extraction in one Cobalt gate:
+12 claims accepted without extraction repair, then a valid INSUFFICIENT_EVIDENCE
+decision with zero operational failures. It used three calls and 49,033 tokens in
+17.5086 seconds; one verification coverage repair was required. Extraction alone
+fell from two calls / 6,954 tokens to one / 3,825; total cost rose because verification
+was finally reached. Four truth matches were supported, four inconclusive and four
+unmatched. A mixed admission/commitment reference still prevented a supported
+disclosure conclusion. No other company or full baseline ran, and no binary accuracy
+improvement is established. See the [normalization repair report](../evaluation/point14-normalization-repair.md).
+PR #5 remains draft and NOT READY; aggregation and uncertainty policies are unchanged.
+
 ## Historical baselines and integration boundary
 
 These measurements precede Option C and do not establish its accuracy:
