@@ -311,7 +311,80 @@ This integration follows the [Langfuse AI skill](https://github.com/langfuse/ski
 > for each point: why you chose it, your PASS rule in one or two sentences, and the evidence it uses. Quote Fisher where it helps.
 
 ### Design
-> a visualization of your agent design and one paragraph describing it.
+
+The following Mermaid diagram captures the **planned first integrated iteration**. Points 4, 5 and 14 are separate specialist workflows that may execute concurrently. Point 5's strategies are alternatives: the evaluation compares both, but the final runner uses only the selected one. The diagram does not claim that the concurrent specialist branches have already been integrated.
+
+```mermaid
+flowchart TD
+    START["HW3 Runner"] --> SETUP["build_agent(): DeepSeek v4 Flash + optional Langfuse"]
+    SETUP --> COMP["Company orchestrator: four company-scoped tools"]
+
+    COMP --> I1
+    COMP --> SQL5
+    COMP --> SQL14
+    COMP --> DOC
+
+    subgraph P4["Point 4 — Sales Organisation"]
+        direction TB
+        I1["Interview customer: sales_team"] --> C1["LLM classifier"]
+        C1 --> U1{"UNCERTAIN?"}
+        U1 -->|No| R4["PASS / FAIL"]
+        U1 -->|Yes| I2["Interview competitor: sales_team"]
+        I2 --> C2["LLM reassessment"]
+        C2 --> U2{"Still uncertain?"}
+        U2 -->|No| R4
+        U2 -->|Yes| ADJ4["Bounded final adjudication"]
+        ADJ4 --> R4
+    end
+
+    subgraph P5["Point 5 — Profit Margins"]
+        direction TB
+        SQL5["SQL financial data"] --> STRAT{"Selected strategy"}
+        STRAT -->|A| INDUSTRY["FY2025 margin vs industry median"]
+        STRAT -->|B| HISTORY["2023–2025 historical margins"]
+        INDUSTRY --> R5["Deterministic PASS / FAIL"]
+        HISTORY --> R5
+    end
+
+    subgraph P14["Point 14 — Management Transparency"]
+        direction TB
+        SQL14["SQL financial extraction"] --> FIN["Financial snapshot"]
+        DOC["Read earnings calls"] --> EX["LLM claim extraction"]
+        EX --> VALID["Validate source quotations"]
+        FIN --> VERIFY["LLM transparency verifier"]
+        VALID --> VERIFY
+        VERIFY --> STATUS{"Transparency assessment"}
+        STATUS -->|TRANSPARENT| PASS14["PASS"]
+        STATUS -->|EVASIVE| FAIL14["FAIL"]
+        STATUS -->|UNCERTAIN| ADJ14["Bounded adjudication"]
+        ADJ14 --> R14["PASS / FAIL"]
+    end
+
+    R4 --> AGG["Deterministic validation + aggregation"]
+    R5 --> AGG
+    PASS14 --> AGG
+    FAIL14 --> AGG
+    R14 --> AGG
+
+    AGG --> SUMMARY["Company summary (cannot override verdicts)"]
+    SUMMARY --> CSV["results.csv"]
+    CSV --> EVAL["Public ground truth: balanced accuracy"]
+
+    COMP -.-> LF["Optional Langfuse traces / usage / latency"]
+    C1 -.-> LF
+    R5 -.-> LF
+    VERIFY -.-> LF
+
+    classDef llm fill:#dbeafe,stroke:#2563eb,color:#1e40af
+    classDef deterministic fill:#dcfce7,stroke:#16a34a,color:#166534
+    classDef monitoring fill:#f3e8ff,stroke:#9333ea,color:#6b21a8
+
+    class C1,C2,ADJ4,EX,VERIFY,ADJ14,SUMMARY llm
+    class FIN,VALID,INDUSTRY,HISTORY,R5,AGG deterministic
+    class LF,EVAL monitoring
+```
+
+**Legend:** Blue marks LLM reasoning, green marks deterministic computation or validation, and purple marks observability or evaluation. The three specialists produce independent verdicts; a deterministic aggregator validates and combines them. Langfuse is optional and does not determine correctness, which is assessed separately against the public ground truth.
 
 ### Results
 > your point score on `public_test`, the companies where your verdicts disagree with the public answers, and why.
