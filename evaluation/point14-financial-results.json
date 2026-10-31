@@ -1,0 +1,109 @@
+{
+  "mode": "financial_only",
+  "companies": 20,
+  "complete": 20,
+  "results": [
+    {
+      "company": "ashgrove_labs",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "aurel_systems",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "bramble_labs",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "cobalt_holdings",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "copperfield_technologies",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "driftwood_systems",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "dunmore_holdings",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "elmstead_technologies",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "emberly_systems",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "everline_dynamics",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "falcrest_technologies",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "fernhill_group",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "granite_group",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "halcyon_works",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "hollins_group",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "ironbark_technologies",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "juniper_industries",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "kestrel_technologies",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "lindale_holdings",
+      "status": "complete",
+      "metrics": 84
+    },
+    {
+      "company": "northwind_group",
+      "status": "complete",
+      "metrics": 84
+    }
+  ],
+  "wall_seconds": 0.06429195799864829,
+  "transparency_accuracy": "not measured; no LLM calls or labels loaded"
+}
