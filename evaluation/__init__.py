@@ -1,1 +1,1 @@
-"""Development-only runners; labels must never enter fisher_agent."""
+"""Development-only runners; labels stay outside runtime assessments."""

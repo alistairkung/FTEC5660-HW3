@@ -1,1 +1,1 @@
-"""Student-owned Fisher point specialists; no import-time clients or evidence."""
+"""Student-owned Fisher specialists; no import-time clients or evidence."""

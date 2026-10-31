@@ -304,6 +304,59 @@ configuration. Compare the trace with Langfuse's
 [LangChain integration](https://langfuse.com/integrations/frameworks/langchain).
 This integration follows the [Langfuse AI skill](https://github.com/langfuse/skills/tree/main/skills/langfuse).
 
+## Point 5 strategy experiment (development only)
+
+Two interchangeable `MarginStrategy` implementations expose
+`evaluate(company_id, sql_query) -> MarginResult` in `fisher_agent/`:
+
+- `IndustryMarginStrategy`: FY2025 operating margin >= the company's own industry median.
+- `HistoricalMarginStrategy`: FY2023–2025 operating margins all > 0, and FY2025 >= FY2023.
+
+Both use only the supplied LangChain SQL tool. Revenue and costs are aggregated
+separately before joining, and Python computes
+`100 * (revenue - operating_costs) / revenue` with `Decimal`. Costs include cost
+of sales, selling/admin and R&D; monetary inputs stay in USD thousands. Rules
+use unrounded calculated margins in percentage points. No model calls are made.
+
+Results contain typed annual metrics, original SQL text/results, parsed rows,
+company-scoped evidence IDs and a rule summary. Missing/duplicate annual rows,
+incomplete monthly costs, null/nonnumeric amounts, nonfinite values, nonpositive
+revenue, invalid/missing medians, truncated responses and SQL failures produce
+`status='error', verdict=None`, distinct from an evidence-backed FAIL. There are
+no retries or interviews. A later grading integration must choose its public
+failure mapping explicitly.
+
+Run the comparison and offline checks from the repository root:
+
+```bash
+python -m evaluation.compare_point5
+python -m unittest discover -s test -v
+```
+
+The comparison invokes the unchanged lecturer tool factory, executes both
+strategies for all public companies, **then** loads Point 5 ground truth for
+scoring. Errors count as incorrect for their true class; their diagnostics are
+reported separately. Labels never reach runtime strategies or trace payloads.
+`--data-folder` and `--output` can select another development fixture and report.
+
+See [comparison findings](evaluation/point5_comparison.md) and
+[full evidence/results](evaluation/point5_results.json). Industry achieves 100%
+balanced accuracy; Historical achieves 52.38%. Industry is recommended for
+review on both assessment fit and public evidence; no winner is wired into
+`hw3.py`. Point 4, Point 14, `CHOSEN_POINTS` and the three-point runner are unchanged.
+
+Optional tracing uses the existing lifecycle and closes/flushes on completion:
+
+```bash
+python -m evaluation.compare_point5 --trace
+```
+
+With the optional SDK and configured credentials, this creates `point5-industry`
+and `point5-historical` spans with company ID, Fisher point 5, result, errors and
+SQL provenance. Without credentials it still runs. Without `--trace`, the runner
+does not initialize Langfuse or load `.env`. No DeepSeek call or API key is needed
+for this experiment. Trace payloads are tested offline; live delivery is unverified.
+
 ## Homework 3 solution:
 > to students: this is your report, see the homework description.
 
@@ -311,7 +364,80 @@ This integration follows the [Langfuse AI skill](https://github.com/langfuse/ski
 > for each point: why you chose it, your PASS rule in one or two sentences, and the evidence it uses. Quote Fisher where it helps.
 
 ### Design
-> a visualization of your agent design and one paragraph describing it.
+
+The following Mermaid diagram captures the **planned first integrated iteration**. Points 4, 5 and 14 are separate specialist workflows that may execute concurrently. Point 5's strategies are alternatives: the evaluation compares both, but the final runner uses only the selected one. The diagram does not claim that the concurrent specialist branches have already been integrated.
+
+```mermaid
+flowchart TD
+    START["HW3 Runner"] --> SETUP["build_agent(): DeepSeek v4 Flash + optional Langfuse"]
+    SETUP --> COMP["Company orchestrator: four company-scoped tools"]
+
+    COMP --> I1
+    COMP --> SQL5
+    COMP --> SQL14
+    COMP --> DOC
+
+    subgraph P4["Point 4 — Sales Organisation"]
+        direction TB
+        I1["Interview customer: sales_team"] --> C1["LLM classifier"]
+        C1 --> U1{"UNCERTAIN?"}
+        U1 -->|No| R4["PASS / FAIL"]
+        U1 -->|Yes| I2["Interview competitor: sales_team"]
+        I2 --> C2["LLM reassessment"]
+        C2 --> U2{"Still uncertain?"}
+        U2 -->|No| R4
+        U2 -->|Yes| ADJ4["Bounded final adjudication"]
+        ADJ4 --> R4
+    end
+
+    subgraph P5["Point 5 — Profit Margins"]
+        direction TB
+        SQL5["SQL financial data"] --> STRAT{"Selected strategy"}
+        STRAT -->|A| INDUSTRY["FY2025 margin vs industry median"]
+        STRAT -->|B| HISTORY["2023–2025 historical margins"]
+        INDUSTRY --> R5["Deterministic PASS / FAIL"]
+        HISTORY --> R5
+    end
+
+    subgraph P14["Point 14 — Management Transparency"]
+        direction TB
+        SQL14["SQL financial extraction"] --> FIN["Financial snapshot"]
+        DOC["Read earnings calls"] --> EX["LLM claim extraction"]
+        EX --> VALID["Validate source quotations"]
+        FIN --> VERIFY["LLM transparency verifier"]
+        VALID --> VERIFY
+        VERIFY --> STATUS{"Transparency assessment"}
+        STATUS -->|TRANSPARENT| PASS14["PASS"]
+        STATUS -->|EVASIVE| FAIL14["FAIL"]
+        STATUS -->|UNCERTAIN| ADJ14["Bounded adjudication"]
+        ADJ14 --> R14["PASS / FAIL"]
+    end
+
+    R4 --> AGG["Deterministic validation + aggregation"]
+    R5 --> AGG
+    PASS14 --> AGG
+    FAIL14 --> AGG
+    R14 --> AGG
+
+    AGG --> SUMMARY["Company summary (cannot override verdicts)"]
+    SUMMARY --> CSV["results.csv"]
+    CSV --> EVAL["Public ground truth: balanced accuracy"]
+
+    COMP -.-> LF["Optional Langfuse traces / usage / latency"]
+    C1 -.-> LF
+    R5 -.-> LF
+    VERIFY -.-> LF
+
+    classDef llm fill:#dbeafe,stroke:#2563eb,color:#1e40af
+    classDef deterministic fill:#dcfce7,stroke:#16a34a,color:#166534
+    classDef monitoring fill:#f3e8ff,stroke:#9333ea,color:#6b21a8
+
+    class C1,C2,ADJ4,EX,VERIFY,ADJ14,SUMMARY llm
+    class FIN,VALID,INDUSTRY,HISTORY,R5,AGG deterministic
+    class LF,EVAL monitoring
+```
+
+**Legend:** Blue marks LLM reasoning, green marks deterministic computation or validation, and purple marks observability or evaluation. The three specialists produce independent verdicts; a deterministic aggregator validates and combines them. Langfuse is optional and does not determine correctness, which is assessed separately against the public ground truth.
 
 ### Results
 > your point score on `public_test`, the companies where your verdicts disagree with the public answers, and why.

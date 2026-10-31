@@ -1,0 +1,3057 @@
+{
+  "point": 5,
+  "data_folder": "public_test",
+  "report": {
+    "metrics": {
+      "industry": {
+        "total": 20,
+        "completed": 20,
+        "pass_recall": 1.0,
+        "fail_recall": 1.0,
+        "balanced_accuracy": 1.0,
+        "label_disagreements": [],
+        "errors": {},
+        "sql_errors": [],
+        "sql_calls": 40
+      },
+      "historical": {
+        "total": 20,
+        "completed": 20,
+        "pass_recall": 0.7142857142857143,
+        "fail_recall": 0.3333333333333333,
+        "balanced_accuracy": 0.5238095238095238,
+        "label_disagreements": [
+          "ashgrove_labs",
+          "cobalt_holdings",
+          "emberly_systems",
+          "everline_dynamics",
+          "falcrest_technologies",
+          "granite_group",
+          "halcyon_works",
+          "ironbark_technologies"
+        ],
+        "errors": {},
+        "sql_errors": [],
+        "sql_calls": 20
+      }
+    },
+    "strategy_disagreements": [
+      "ashgrove_labs",
+      "cobalt_holdings",
+      "emberly_systems",
+      "everline_dynamics",
+      "falcrest_technologies",
+      "granite_group",
+      "halcyon_works",
+      "ironbark_technologies"
+    ]
+  },
+  "labels": {
+    "kestrel_technologies": "PASS",
+    "lindale_holdings": "FAIL",
+    "juniper_industries": "PASS",
+    "ironbark_technologies": "FAIL",
+    "falcrest_technologies": "FAIL",
+    "everline_dynamics": "FAIL",
+    "dunmore_holdings": "PASS",
+    "fernhill_group": "PASS",
+    "driftwood_systems": "PASS",
+    "halcyon_works": "FAIL",
+    "northwind_group": "FAIL",
+    "cobalt_holdings": "PASS",
+    "aurel_systems": "PASS",
+    "emberly_systems": "PASS",
+    "granite_group": "PASS",
+    "copperfield_technologies": "PASS",
+    "bramble_labs": "PASS",
+    "ashgrove_labs": "PASS",
+    "hollins_group": "PASS",
+    "elmstead_technologies": "PASS"
+  },
+  "results": {
+    "industry": {
+      "ashgrove_labs": {
+        "company_id": "ashgrove_labs",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 13.3577% vs industry median 9.40%; PASS requires margin >= median. Sources: ashgrove_labs:sql:c6a921fd4282b0dc, ashgrove_labs:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "ashgrove_labs:sql:c6a921fd4282b0dc",
+            "company_id": "ashgrove_labs",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 955791.30 | 828120.00 | 1006 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "955791.30",
+                "828120.00",
+                "1006",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "ashgrove_labs:sql:93f20a891db502d4",
+            "company_id": "ashgrove_labs",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nindustrial robotics | 9.40",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "industrial robotics",
+                "9.40"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "955791.30",
+            "operating_costs": "828120.00",
+            "margin_pct": "13.35765454236714646806264087",
+            "evidence_id": "ashgrove_labs:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "9.40",
+        "error": null
+      },
+      "aurel_systems": {
+        "company_id": "aurel_systems",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 12.6272% vs industry median 10.30%; PASS requires margin >= median. Sources: aurel_systems:sql:c6a921fd4282b0dc, aurel_systems:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "aurel_systems:sql:c6a921fd4282b0dc",
+            "company_id": "aurel_systems",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 269763.40 | 235699.90 | 948 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "269763.40",
+                "235699.90",
+                "948",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "aurel_systems:sql:93f20a891db502d4",
+            "company_id": "aurel_systems",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\npackaging machinery | 10.30",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "packaging machinery",
+                "10.30"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "269763.40",
+            "operating_costs": "235699.90",
+            "margin_pct": "12.62717625889946523509119473",
+            "evidence_id": "aurel_systems:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "10.30",
+        "error": null
+      },
+      "bramble_labs": {
+        "company_id": "bramble_labs",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 13.6401% vs industry median 11.90%; PASS requires margin >= median. Sources: bramble_labs:sql:c6a921fd4282b0dc, bramble_labs:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "bramble_labs:sql:c6a921fd4282b0dc",
+            "company_id": "bramble_labs",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 278951.00 | 240901.80 | 936 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "278951.00",
+                "240901.80",
+                "936",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "bramble_labs:sql:93f20a891db502d4",
+            "company_id": "bramble_labs",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nwater treatment equipment | 11.90",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "water treatment equipment",
+                "11.90"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "278951.00",
+            "operating_costs": "240901.80",
+            "margin_pct": "13.64010166660094425185785317",
+            "evidence_id": "bramble_labs:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "11.90",
+        "error": null
+      },
+      "cobalt_holdings": {
+        "company_id": "cobalt_holdings",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 14.2202% vs industry median 10.30%; PASS requires margin >= median. Sources: cobalt_holdings:sql:c6a921fd4282b0dc, cobalt_holdings:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "cobalt_holdings:sql:c6a921fd4282b0dc",
+            "company_id": "cobalt_holdings",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 812787.30 | 697207.70 | 834 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "812787.30",
+                "697207.70",
+                "834",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "cobalt_holdings:sql:93f20a891db502d4",
+            "company_id": "cobalt_holdings",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\npackaging machinery | 10.30",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "packaging machinery",
+                "10.30"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "812787.30",
+            "operating_costs": "697207.70",
+            "margin_pct": "14.22015329225739624622579610",
+            "evidence_id": "cobalt_holdings:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "10.30",
+        "error": null
+      },
+      "copperfield_technologies": {
+        "company_id": "copperfield_technologies",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 17.9667% vs industry median 15.10%; PASS requires margin >= median. Sources: copperfield_technologies:sql:c6a921fd4282b0dc, copperfield_technologies:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "copperfield_technologies:sql:c6a921fd4282b0dc",
+            "company_id": "copperfield_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 912132.90 | 748252.90 | 1110 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "912132.90",
+                "748252.90",
+                "1110",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "copperfield_technologies:sql:93f20a891db502d4",
+            "company_id": "copperfield_technologies",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nsemiconductor equipment | 15.10",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "semiconductor equipment",
+                "15.10"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "912132.90",
+            "operating_costs": "748252.90",
+            "margin_pct": "17.96668007480050330384969120",
+            "evidence_id": "copperfield_technologies:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "15.10",
+        "error": null
+      },
+      "driftwood_systems": {
+        "company_id": "driftwood_systems",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 13.6169% vs industry median 11.40%; PASS requires margin >= median. Sources: driftwood_systems:sql:c6a921fd4282b0dc, driftwood_systems:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "driftwood_systems:sql:c6a921fd4282b0dc",
+            "company_id": "driftwood_systems",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 604503.20 | 522188.70 | 939 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "604503.20",
+                "522188.70",
+                "939",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "driftwood_systems:sql:93f20a891db502d4",
+            "company_id": "driftwood_systems",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nspecialty chemicals | 11.40",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "specialty chemicals",
+                "11.40"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "604503.20",
+            "operating_costs": "522188.70",
+            "margin_pct": "13.61688407935640373781313316",
+            "evidence_id": "driftwood_systems:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "11.40",
+        "error": null
+      },
+      "dunmore_holdings": {
+        "company_id": "dunmore_holdings",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 15.0251% vs industry median 12.50%; PASS requires margin >= median. Sources: dunmore_holdings:sql:c6a921fd4282b0dc, dunmore_holdings:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "dunmore_holdings:sql:c6a921fd4282b0dc",
+            "company_id": "dunmore_holdings",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 950595.30 | 807767.40 | 968 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "950595.30",
+                "807767.40",
+                "968",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "dunmore_holdings:sql:93f20a891db502d4",
+            "company_id": "dunmore_holdings",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nprecision optics | 12.50",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "precision optics",
+                "12.50"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "950595.30",
+            "operating_costs": "807767.40",
+            "margin_pct": "15.02510058696902877596806969",
+            "evidence_id": "dunmore_holdings:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "12.50",
+        "error": null
+      },
+      "elmstead_technologies": {
+        "company_id": "elmstead_technologies",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 11.7238% vs industry median 9.40%; PASS requires margin >= median. Sources: elmstead_technologies:sql:c6a921fd4282b0dc, elmstead_technologies:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "elmstead_technologies:sql:c6a921fd4282b0dc",
+            "company_id": "elmstead_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 388235.30 | 342719.50 | 1159 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "388235.30",
+                "342719.50",
+                "1159",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "elmstead_technologies:sql:93f20a891db502d4",
+            "company_id": "elmstead_technologies",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nindustrial robotics | 9.40",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "industrial robotics",
+                "9.40"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "388235.30",
+            "operating_costs": "342719.50",
+            "margin_pct": "11.72376648903384107524483219",
+            "evidence_id": "elmstead_technologies:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "9.40",
+        "error": null
+      },
+      "emberly_systems": {
+        "company_id": "emberly_systems",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 15.3814% vs industry median 12.50%; PASS requires margin >= median. Sources: emberly_systems:sql:c6a921fd4282b0dc, emberly_systems:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "emberly_systems:sql:c6a921fd4282b0dc",
+            "company_id": "emberly_systems",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 276680.10 | 234122.80 | 1232 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "276680.10",
+                "234122.80",
+                "1232",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "emberly_systems:sql:93f20a891db502d4",
+            "company_id": "emberly_systems",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nprecision optics | 12.50",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "precision optics",
+                "12.50"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "276680.10",
+            "operating_costs": "234122.80",
+            "margin_pct": "15.38140979419914912565088707",
+            "evidence_id": "emberly_systems:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "12.50",
+        "error": null
+      },
+      "everline_dynamics": {
+        "company_id": "everline_dynamics",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2025 margin 6.3002% vs industry median 10.30%; PASS requires margin >= median. Sources: everline_dynamics:sql:c6a921fd4282b0dc, everline_dynamics:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "everline_dynamics:sql:c6a921fd4282b0dc",
+            "company_id": "everline_dynamics",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 384501.70 | 360277.20 | 911 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "384501.70",
+                "360277.20",
+                "911",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "everline_dynamics:sql:93f20a891db502d4",
+            "company_id": "everline_dynamics",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\npackaging machinery | 10.30",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "packaging machinery",
+                "10.30"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "384501.70",
+            "operating_costs": "360277.20",
+            "margin_pct": "6.300232222640368039985258843",
+            "evidence_id": "everline_dynamics:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "10.30",
+        "error": null
+      },
+      "falcrest_technologies": {
+        "company_id": "falcrest_technologies",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2025 margin 6.2631% vs industry median 9.40%; PASS requires margin >= median. Sources: falcrest_technologies:sql:c6a921fd4282b0dc, falcrest_technologies:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "falcrest_technologies:sql:c6a921fd4282b0dc",
+            "company_id": "falcrest_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 267548.50 | 250791.60 | 1271 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "267548.50",
+                "250791.60",
+                "1271",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "falcrest_technologies:sql:93f20a891db502d4",
+            "company_id": "falcrest_technologies",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nindustrial robotics | 9.40",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "industrial robotics",
+                "9.40"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "267548.50",
+            "operating_costs": "250791.60",
+            "margin_pct": "6.263126124796065012511750206",
+            "evidence_id": "falcrest_technologies:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "9.40",
+        "error": null
+      },
+      "fernhill_group": {
+        "company_id": "fernhill_group",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 11.3562% vs industry median 8.30%; PASS requires margin >= median. Sources: fernhill_group:sql:c6a921fd4282b0dc, fernhill_group:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "fernhill_group:sql:c6a921fd4282b0dc",
+            "company_id": "fernhill_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 639418.70 | 566804.80 | 1059 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "639418.70",
+                "566804.80",
+                "1059",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "fernhill_group:sql:93f20a891db502d4",
+            "company_id": "fernhill_group",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nfood ingredients | 8.30",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "food ingredients",
+                "8.30"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "639418.70",
+            "operating_costs": "566804.80",
+            "margin_pct": "11.35623653171231933004148925",
+            "evidence_id": "fernhill_group:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "8.30",
+        "error": null
+      },
+      "granite_group": {
+        "company_id": "granite_group",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 19.6732% vs industry median 16.80%; PASS requires margin >= median. Sources: granite_group:sql:c6a921fd4282b0dc, granite_group:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "granite_group:sql:c6a921fd4282b0dc",
+            "company_id": "granite_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 375318.70 | 301481.40 | 1095 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "375318.70",
+                "301481.40",
+                "1095",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "granite_group:sql:93f20a891db502d4",
+            "company_id": "granite_group",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nmedical devices | 16.80",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "medical devices",
+                "16.80"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "375318.70",
+            "operating_costs": "301481.40",
+            "margin_pct": "19.67322704677384846531760874",
+            "evidence_id": "granite_group:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "16.80",
+        "error": null
+      },
+      "halcyon_works": {
+        "company_id": "halcyon_works",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2025 margin 9.5235% vs industry median 11.40%; PASS requires margin >= median. Sources: halcyon_works:sql:c6a921fd4282b0dc, halcyon_works:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "halcyon_works:sql:c6a921fd4282b0dc",
+            "company_id": "halcyon_works",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 345004.30 | 312147.70 | 981 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "345004.30",
+                "312147.70",
+                "981",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "halcyon_works:sql:93f20a891db502d4",
+            "company_id": "halcyon_works",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nspecialty chemicals | 11.40",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "specialty chemicals",
+                "11.40"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "345004.30",
+            "operating_costs": "312147.70",
+            "margin_pct": "9.523533474800169157311952344",
+            "evidence_id": "halcyon_works:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "11.40",
+        "error": null
+      },
+      "hollins_group": {
+        "company_id": "hollins_group",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 20.4620% vs industry median 16.80%; PASS requires margin >= median. Sources: hollins_group:sql:c6a921fd4282b0dc, hollins_group:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "hollins_group:sql:c6a921fd4282b0dc",
+            "company_id": "hollins_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 522022.40 | 415206.40 | 1049 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "522022.40",
+                "415206.40",
+                "1049",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "hollins_group:sql:93f20a891db502d4",
+            "company_id": "hollins_group",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nmedical devices | 16.80",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "medical devices",
+                "16.80"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "522022.40",
+            "operating_costs": "415206.40",
+            "margin_pct": "20.46195718804403795699188387",
+            "evidence_id": "hollins_group:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "16.80",
+        "error": null
+      },
+      "ironbark_technologies": {
+        "company_id": "ironbark_technologies",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2025 margin 5.8032% vs industry median 9.40%; PASS requires margin >= median. Sources: ironbark_technologies:sql:c6a921fd4282b0dc, ironbark_technologies:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "ironbark_technologies:sql:c6a921fd4282b0dc",
+            "company_id": "ironbark_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 489387.30 | 460987.30 | 872 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "489387.30",
+                "460987.30",
+                "872",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "ironbark_technologies:sql:93f20a891db502d4",
+            "company_id": "ironbark_technologies",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nindustrial robotics | 9.40",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "industrial robotics",
+                "9.40"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "489387.30",
+            "operating_costs": "460987.30",
+            "margin_pct": "5.803174704370137925524426155",
+            "evidence_id": "ironbark_technologies:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "9.40",
+        "error": null
+      },
+      "juniper_industries": {
+        "company_id": "juniper_industries",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 11.5927% vs industry median 9.40%; PASS requires margin >= median. Sources: juniper_industries:sql:c6a921fd4282b0dc, juniper_industries:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "juniper_industries:sql:c6a921fd4282b0dc",
+            "company_id": "juniper_industries",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 494146.90 | 436861.80 | 906 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "494146.90",
+                "436861.80",
+                "906",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "juniper_industries:sql:93f20a891db502d4",
+            "company_id": "juniper_industries",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nindustrial robotics | 9.40",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "industrial robotics",
+                "9.40"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "494146.90",
+            "operating_costs": "436861.80",
+            "margin_pct": "11.59272677821109471697586285",
+            "evidence_id": "juniper_industries:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "9.40",
+        "error": null
+      },
+      "kestrel_technologies": {
+        "company_id": "kestrel_technologies",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2025 margin 10.0125% vs industry median 8.30%; PASS requires margin >= median. Sources: kestrel_technologies:sql:c6a921fd4282b0dc, kestrel_technologies:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "kestrel_technologies:sql:c6a921fd4282b0dc",
+            "company_id": "kestrel_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 578574.00 | 520644.20 | 903 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "578574.00",
+                "520644.20",
+                "903",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "kestrel_technologies:sql:93f20a891db502d4",
+            "company_id": "kestrel_technologies",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nfood ingredients | 8.30",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "food ingredients",
+                "8.30"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "578574.00",
+            "operating_costs": "520644.20",
+            "margin_pct": "10.01251352463124855247556924",
+            "evidence_id": "kestrel_technologies:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "8.30",
+        "error": null
+      },
+      "lindale_holdings": {
+        "company_id": "lindale_holdings",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2025 margin 4.5318% vs industry median 8.30%; PASS requires margin >= median. Sources: lindale_holdings:sql:c6a921fd4282b0dc, lindale_holdings:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "lindale_holdings:sql:c6a921fd4282b0dc",
+            "company_id": "lindale_holdings",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 349598.40 | 333755.30 | 970 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "349598.40",
+                "333755.30",
+                "970",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "lindale_holdings:sql:93f20a891db502d4",
+            "company_id": "lindale_holdings",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nfood ingredients | 8.30",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "food ingredients",
+                "8.30"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "349598.40",
+            "operating_costs": "333755.30",
+            "margin_pct": "4.531799916704424276541311402",
+            "evidence_id": "lindale_holdings:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "8.30",
+        "error": null
+      },
+      "northwind_group": {
+        "company_id": "northwind_group",
+        "strategy": "industry",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2025 margin 12.7612% vs industry median 15.10%; PASS requires margin >= median. Sources: northwind_group:sql:c6a921fd4282b0dc, northwind_group:sql:93f20a891db502d4",
+        "evidence": [
+          {
+            "evidence_id": "northwind_group:sql:c6a921fd4282b0dc",
+            "company_id": "northwind_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2025-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2025-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2025 | 536987.50 | 468461.50 | 1193 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2025",
+                "536987.50",
+                "468461.50",
+                "1193",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          },
+          {
+            "evidence_id": "northwind_group:sql:93f20a891db502d4",
+            "company_id": "northwind_group",
+            "query": "SELECT c.industry, m.operating_margin_pct\nFROM company AS c\nJOIN industry_medians AS m ON m.industry = c.industry",
+            "raw_result": "industry | operating_margin_pct\nsemiconductor equipment | 15.10",
+            "columns": [
+              "industry",
+              "operating_margin_pct"
+            ],
+            "rows": [
+              [
+                "semiconductor equipment",
+                "15.10"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2025,
+            "revenue": "536987.50",
+            "operating_costs": "468461.50",
+            "margin_pct": "12.76119090295397937568379152",
+            "evidence_id": "northwind_group:sql:c6a921fd4282b0dc"
+          }
+        ],
+        "industry_median_pct": "15.10",
+        "error": null
+      }
+    },
+    "historical": {
+      "ashgrove_labs": {
+        "company_id": "ashgrove_labs",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2023 margin 16.0741%; FY2024 margin 14.4963%; FY2025 margin 13.3577%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: ashgrove_labs:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "ashgrove_labs:sql:0ea39171f74d8217",
+            "company_id": "ashgrove_labs",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 765099.70 | 642116.70 | 824 | 0 | 12 | 12 | 0\n2024 | 850048.40 | 726822.80 | 920 | 0 | 12 | 12 | 0\n2025 | 955791.30 | 828120.00 | 1006 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "765099.70",
+                "642116.70",
+                "824",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "850048.40",
+                "726822.80",
+                "920",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "955791.30",
+                "828120.00",
+                "1006",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "765099.70",
+            "operating_costs": "642116.70",
+            "margin_pct": "16.07411426249415599038922640",
+            "evidence_id": "ashgrove_labs:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "850048.40",
+            "operating_costs": "726822.80",
+            "margin_pct": "14.49630397516188489973041535",
+            "evidence_id": "ashgrove_labs:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "955791.30",
+            "operating_costs": "828120.00",
+            "margin_pct": "13.35765454236714646806264087",
+            "evidence_id": "ashgrove_labs:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "aurel_systems": {
+        "company_id": "aurel_systems",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 10.6405%; FY2024 margin 11.3768%; FY2025 margin 12.6272%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: aurel_systems:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "aurel_systems:sql:0ea39171f74d8217",
+            "company_id": "aurel_systems",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 228000.00 | 203739.70 | 831 | 0 | 12 | 12 | 0\n2024 | 243947.50 | 216194.10 | 872 | 0 | 12 | 12 | 0\n2025 | 269763.40 | 235699.90 | 948 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "228000.00",
+                "203739.70",
+                "831",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "243947.50",
+                "216194.10",
+                "872",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "269763.40",
+                "235699.90",
+                "948",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "228000.00",
+            "operating_costs": "203739.70",
+            "margin_pct": "10.64048245614035087719298246",
+            "evidence_id": "aurel_systems:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "243947.50",
+            "operating_costs": "216194.10",
+            "margin_pct": "11.37679213765256868793490403",
+            "evidence_id": "aurel_systems:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "269763.40",
+            "operating_costs": "235699.90",
+            "margin_pct": "12.62717625889946523509119473",
+            "evidence_id": "aurel_systems:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "bramble_labs": {
+        "company_id": "bramble_labs",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 12.2714%; FY2024 margin 13.3102%; FY2025 margin 13.6401%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: bramble_labs:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "bramble_labs:sql:0ea39171f74d8217",
+            "company_id": "bramble_labs",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 230400.10 | 202126.80 | 757 | 0 | 12 | 12 | 0\n2024 | 250684.00 | 217317.50 | 837 | 0 | 12 | 12 | 0\n2025 | 278951.00 | 240901.80 | 936 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "230400.10",
+                "202126.80",
+                "757",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "250684.00",
+                "217317.50",
+                "837",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "278951.00",
+                "240901.80",
+                "936",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "230400.10",
+            "operating_costs": "202126.80",
+            "margin_pct": "12.27139224331933883709251862",
+            "evidence_id": "bramble_labs:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "250684.00",
+            "operating_costs": "217317.50",
+            "margin_pct": "13.31018333838617542403982703",
+            "evidence_id": "bramble_labs:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "278951.00",
+            "operating_costs": "240901.80",
+            "margin_pct": "13.64010166660094425185785317",
+            "evidence_id": "bramble_labs:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "cobalt_holdings": {
+        "company_id": "cobalt_holdings",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2023 margin 15.9722%; FY2024 margin 15.1226%; FY2025 margin 14.2202%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: cobalt_holdings:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "cobalt_holdings:sql:0ea39171f74d8217",
+            "company_id": "cobalt_holdings",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 752400.10 | 632225.10 | 771 | 0 | 12 | 12 | 0\n2024 | 789498.80 | 670106.00 | 799 | 0 | 12 | 12 | 0\n2025 | 812787.30 | 697207.70 | 834 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "752400.10",
+                "632225.10",
+                "771",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "789498.80",
+                "670106.00",
+                "799",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "812787.30",
+                "697207.70",
+                "834",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "752400.10",
+            "operating_costs": "632225.10",
+            "margin_pct": "15.97222009938595170308988529",
+            "evidence_id": "cobalt_holdings:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "789498.80",
+            "operating_costs": "670106.00",
+            "margin_pct": "15.12260689946583832679669684",
+            "evidence_id": "cobalt_holdings:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "812787.30",
+            "operating_costs": "697207.70",
+            "margin_pct": "14.22015329225739624622579610",
+            "evidence_id": "cobalt_holdings:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "copperfield_technologies": {
+        "company_id": "copperfield_technologies",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 15.0835%; FY2024 margin 16.0904%; FY2025 margin 17.9667%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: copperfield_technologies:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "copperfield_technologies:sql:0ea39171f74d8217",
+            "company_id": "copperfield_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 713199.90 | 605624.60 | 862 | 0 | 12 | 12 | 0\n2024 | 802877.70 | 673691.20 | 987 | 0 | 12 | 12 | 0\n2025 | 912132.90 | 748252.90 | 1110 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "713199.90",
+                "605624.60",
+                "862",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "802877.70",
+                "673691.20",
+                "987",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "912132.90",
+                "748252.90",
+                "1110",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "713199.90",
+            "operating_costs": "605624.60",
+            "margin_pct": "15.08347098758707060951635018",
+            "evidence_id": "copperfield_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "802877.70",
+            "operating_costs": "673691.20",
+            "margin_pct": "16.09043320047374587686269030",
+            "evidence_id": "copperfield_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "912132.90",
+            "operating_costs": "748252.90",
+            "margin_pct": "17.96668007480050330384969120",
+            "evidence_id": "copperfield_technologies:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "driftwood_systems": {
+        "company_id": "driftwood_systems",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 12.4766%; FY2024 margin 13.3465%; FY2025 margin 13.6169%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: driftwood_systems:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "driftwood_systems:sql:0ea39171f74d8217",
+            "company_id": "driftwood_systems",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 556600.10 | 487155.50 | 837 | 0 | 12 | 12 | 0\n2024 | 586365.30 | 508105.80 | 896 | 0 | 12 | 12 | 0\n2025 | 604503.20 | 522188.70 | 939 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "556600.10",
+                "487155.50",
+                "837",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "586365.30",
+                "508105.80",
+                "896",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "604503.20",
+                "522188.70",
+                "939",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "556600.10",
+            "operating_costs": "487155.50",
+            "margin_pct": "12.47656980298781836366899683",
+            "evidence_id": "driftwood_systems:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "586365.30",
+            "operating_costs": "508105.80",
+            "margin_pct": "13.34654352841138450723465389",
+            "evidence_id": "driftwood_systems:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "604503.20",
+            "operating_costs": "522188.70",
+            "margin_pct": "13.61688407935640373781313316",
+            "evidence_id": "driftwood_systems:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "dunmore_holdings": {
+        "company_id": "dunmore_holdings",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 13.5552%; FY2024 margin 13.8934%; FY2025 margin 15.0251%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: dunmore_holdings:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "dunmore_holdings:sql:0ea39171f74d8217",
+            "company_id": "dunmore_holdings",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 772900.00 | 668131.50 | 769 | 0 | 12 | 12 | 0\n2024 | 856469.60 | 737476.60 | 880 | 0 | 12 | 12 | 0\n2025 | 950595.30 | 807767.40 | 968 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "772900.00",
+                "668131.50",
+                "769",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "856469.60",
+                "737476.60",
+                "880",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "950595.30",
+                "807767.40",
+                "968",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "772900.00",
+            "operating_costs": "668131.50",
+            "margin_pct": "13.55524647431750549877086298",
+            "evidence_id": "dunmore_holdings:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "856469.60",
+            "operating_costs": "737476.60",
+            "margin_pct": "13.89342949241864509843665204",
+            "evidence_id": "dunmore_holdings:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "950595.30",
+            "operating_costs": "807767.40",
+            "margin_pct": "15.02510058696902877596806969",
+            "evidence_id": "dunmore_holdings:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "elmstead_technologies": {
+        "company_id": "elmstead_technologies",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 10.5374%; FY2024 margin 11.2834%; FY2025 margin 11.7238%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: elmstead_technologies:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "elmstead_technologies:sql:0ea39171f74d8217",
+            "company_id": "elmstead_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 304500.00 | 272413.50 | 903 | 0 | 12 | 12 | 0\n2024 | 341262.20 | 302756.30 | 976 | 0 | 12 | 12 | 0\n2025 | 388235.30 | 342719.50 | 1159 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "304500.00",
+                "272413.50",
+                "903",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "341262.20",
+                "302756.30",
+                "976",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "388235.30",
+                "342719.50",
+                "1159",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "304500.00",
+            "operating_costs": "272413.50",
+            "margin_pct": "10.53743842364532019704433498",
+            "evidence_id": "elmstead_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "341262.20",
+            "operating_costs": "302756.30",
+            "margin_pct": "11.28337682872583016812292718",
+            "evidence_id": "elmstead_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "388235.30",
+            "operating_costs": "342719.50",
+            "margin_pct": "11.72376648903384107524483219",
+            "evidence_id": "elmstead_technologies:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "emberly_systems": {
+        "company_id": "emberly_systems",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2023 margin 18.0877%; FY2024 margin 16.4127%; FY2025 margin 15.3814%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: emberly_systems:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "emberly_systems:sql:0ea39171f74d8217",
+            "company_id": "emberly_systems",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 219300.00 | 179633.70 | 986 | 0 | 12 | 12 | 0\n2024 | 246996.30 | 206457.50 | 1115 | 0 | 12 | 12 | 0\n2025 | 276680.10 | 234122.80 | 1232 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "219300.00",
+                "179633.70",
+                "986",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "246996.30",
+                "206457.50",
+                "1115",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "276680.10",
+                "234122.80",
+                "1232",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "219300.00",
+            "operating_costs": "179633.70",
+            "margin_pct": "18.08768809849521203830369357",
+            "evidence_id": "emberly_systems:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "246996.30",
+            "operating_costs": "206457.50",
+            "margin_pct": "16.41271549411873781105223034",
+            "evidence_id": "emberly_systems:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "276680.10",
+            "operating_costs": "234122.80",
+            "margin_pct": "15.38140979419914912565088707",
+            "evidence_id": "emberly_systems:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "everline_dynamics": {
+        "company_id": "everline_dynamics",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 5.1655%; FY2024 margin 5.3785%; FY2025 margin 6.3002%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: everline_dynamics:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "everline_dynamics:sql:0ea39171f74d8217",
+            "company_id": "everline_dynamics",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 323099.90 | 306410.10 | 802 | 0 | 12 | 12 | 0\n2024 | 351956.40 | 333026.40 | 864 | 0 | 12 | 12 | 0\n2025 | 384501.70 | 360277.20 | 911 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "323099.90",
+                "306410.10",
+                "802",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "351956.40",
+                "333026.40",
+                "864",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "384501.70",
+                "360277.20",
+                "911",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "323099.90",
+            "operating_costs": "306410.10",
+            "margin_pct": "5.165523109106502354225426873",
+            "evidence_id": "everline_dynamics:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "351956.40",
+            "operating_costs": "333026.40",
+            "margin_pct": "5.378507110539828228723785105",
+            "evidence_id": "everline_dynamics:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "384501.70",
+            "operating_costs": "360277.20",
+            "margin_pct": "6.300232222640368039985258843",
+            "evidence_id": "everline_dynamics:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "falcrest_technologies": {
+        "company_id": "falcrest_technologies",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 4.5692%; FY2024 margin 5.7269%; FY2025 margin 6.2631%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: falcrest_technologies:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "falcrest_technologies:sql:0ea39171f74d8217",
+            "company_id": "falcrest_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 210800.30 | 201168.40 | 972 | 0 | 12 | 12 | 0\n2024 | 238649.70 | 224982.50 | 1133 | 0 | 12 | 12 | 0\n2025 | 267548.50 | 250791.60 | 1271 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "210800.30",
+                "201168.40",
+                "972",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "238649.70",
+                "224982.50",
+                "1133",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "267548.50",
+                "250791.60",
+                "1271",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "210800.30",
+            "operating_costs": "201168.40",
+            "margin_pct": "4.569206021054049733325806462",
+            "evidence_id": "falcrest_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "238649.70",
+            "operating_costs": "224982.50",
+            "margin_pct": "5.726887567845256038453012931",
+            "evidence_id": "falcrest_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "267548.50",
+            "operating_costs": "250791.60",
+            "margin_pct": "6.263126124796065012511750206",
+            "evidence_id": "falcrest_technologies:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "fernhill_group": {
+        "company_id": "fernhill_group",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 9.1495%; FY2024 margin 10.6891%; FY2025 margin 11.3562%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: fernhill_group:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "fernhill_group:sql:0ea39171f74d8217",
+            "company_id": "fernhill_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 559100.20 | 507945.60 | 933 | 0 | 12 | 12 | 0\n2024 | 608566.00 | 543515.50 | 1020 | 0 | 12 | 12 | 0\n2025 | 639418.70 | 566804.80 | 1059 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "559100.20",
+                "507945.60",
+                "933",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "608566.00",
+                "543515.50",
+                "1020",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "639418.70",
+                "566804.80",
+                "1059",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "559100.20",
+            "operating_costs": "507945.60",
+            "margin_pct": "9.149451207493755144426705625",
+            "evidence_id": "fernhill_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "608566.00",
+            "operating_costs": "543515.50",
+            "margin_pct": "10.68914464495223196826638360",
+            "evidence_id": "fernhill_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "639418.70",
+            "operating_costs": "566804.80",
+            "margin_pct": "11.35623653171231933004148925",
+            "evidence_id": "fernhill_group:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "granite_group": {
+        "company_id": "granite_group",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2023 margin 21.2333%; FY2024 margin 20.0982%; FY2025 margin 19.6732%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: granite_group:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "granite_group:sql:0ea39171f74d8217",
+            "company_id": "granite_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 305200.20 | 240396.00 | 917 | 0 | 12 | 12 | 0\n2024 | 339562.80 | 271316.80 | 966 | 0 | 12 | 12 | 0\n2025 | 375318.70 | 301481.40 | 1095 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "305200.20",
+                "240396.00",
+                "917",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "339562.80",
+                "271316.80",
+                "966",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "375318.70",
+                "301481.40",
+                "1095",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "305200.20",
+            "operating_costs": "240396.00",
+            "margin_pct": "21.23334126255487381725175803",
+            "evidence_id": "granite_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "339562.80",
+            "operating_costs": "271316.80",
+            "margin_pct": "20.09819685784190729962174891",
+            "evidence_id": "granite_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "375318.70",
+            "operating_costs": "301481.40",
+            "margin_pct": "19.67322704677384846531760874",
+            "evidence_id": "granite_group:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "halcyon_works": {
+        "company_id": "halcyon_works",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 8.3823%; FY2024 margin 9.4319%; FY2025 margin 9.5235%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: halcyon_works:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "halcyon_works:sql:0ea39171f74d8217",
+            "company_id": "halcyon_works",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 320199.90 | 293359.90 | 898 | 0 | 12 | 12 | 0\n2024 | 338885.50 | 306922.00 | 975 | 0 | 12 | 12 | 0\n2025 | 345004.30 | 312147.70 | 981 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "320199.90",
+                "293359.90",
+                "898",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "338885.50",
+                "306922.00",
+                "975",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "345004.30",
+                "312147.70",
+                "981",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "320199.90",
+            "operating_costs": "293359.90",
+            "margin_pct": "8.382263704642006446597890880",
+            "evidence_id": "halcyon_works:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "338885.50",
+            "operating_costs": "306922.00",
+            "margin_pct": "9.431946778484178284405794878",
+            "evidence_id": "halcyon_works:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "345004.30",
+            "operating_costs": "312147.70",
+            "margin_pct": "9.523533474800169157311952344",
+            "evidence_id": "halcyon_works:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "hollins_group": {
+        "company_id": "hollins_group",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 18.3142%; FY2024 margin 19.6439%; FY2025 margin 20.4620%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: hollins_group:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "hollins_group:sql:0ea39171f74d8217",
+            "company_id": "hollins_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 437600.00 | 357457.20 | 880 | 0 | 12 | 12 | 0\n2024 | 477929.60 | 384045.60 | 937 | 0 | 12 | 12 | 0\n2025 | 522022.40 | 415206.40 | 1049 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "437600.00",
+                "357457.20",
+                "880",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "477929.60",
+                "384045.60",
+                "937",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "522022.40",
+                "415206.40",
+                "1049",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "437600.00",
+            "operating_costs": "357457.20",
+            "margin_pct": "18.31416819012797074954296161",
+            "evidence_id": "hollins_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "477929.60",
+            "operating_costs": "384045.60",
+            "margin_pct": "19.64389734387658768153301239",
+            "evidence_id": "hollins_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "522022.40",
+            "operating_costs": "415206.40",
+            "margin_pct": "20.46195718804403795699188387",
+            "evidence_id": "hollins_group:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "ironbark_technologies": {
+        "company_id": "ironbark_technologies",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 3.5575%; FY2024 margin 5.0486%; FY2025 margin 5.8032%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: ironbark_technologies:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "ironbark_technologies:sql:0ea39171f74d8217",
+            "company_id": "ironbark_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 427700.00 | 412484.60 | 755 | 0 | 12 | 12 | 0\n2024 | 458561.50 | 435410.70 | 799 | 0 | 12 | 12 | 0\n2025 | 489387.30 | 460987.30 | 872 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "427700.00",
+                "412484.60",
+                "755",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "458561.50",
+                "435410.70",
+                "799",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "489387.30",
+                "460987.30",
+                "872",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "427700.00",
+            "operating_costs": "412484.60",
+            "margin_pct": "3.557493570259527706336216975",
+            "evidence_id": "ironbark_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "458561.50",
+            "operating_costs": "435410.70",
+            "margin_pct": "5.048570366243132055351354180",
+            "evidence_id": "ironbark_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "489387.30",
+            "operating_costs": "460987.30",
+            "margin_pct": "5.803174704370137925524426155",
+            "evidence_id": "ironbark_technologies:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "juniper_industries": {
+        "company_id": "juniper_industries",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 10.4849%; FY2024 margin 11.0596%; FY2025 margin 11.5927%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: juniper_industries:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "juniper_industries:sql:0ea39171f74d8217",
+            "company_id": "juniper_industries",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 431499.80 | 386257.30 | 771 | 0 | 12 | 12 | 0\n2024 | 463438.90 | 412184.40 | 850 | 0 | 12 | 12 | 0\n2025 | 494146.90 | 436861.80 | 906 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "431499.80",
+                "386257.30",
+                "771",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "463438.90",
+                "412184.40",
+                "850",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "494146.90",
+                "436861.80",
+                "906",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "431499.80",
+            "operating_costs": "386257.30",
+            "margin_pct": "10.48494112859380236097444309",
+            "evidence_id": "juniper_industries:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "463438.90",
+            "operating_costs": "412184.40",
+            "margin_pct": "11.05960246323733290407861748",
+            "evidence_id": "juniper_industries:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "494146.90",
+            "operating_costs": "436861.80",
+            "margin_pct": "11.59272677821109471697586285",
+            "evidence_id": "juniper_industries:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "kestrel_technologies": {
+        "company_id": "kestrel_technologies",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "PASS",
+        "summary": "FY2023 margin 8.9686%; FY2024 margin 9.8517%; FY2025 margin 10.0125%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: kestrel_technologies:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "kestrel_technologies:sql:0ea39171f74d8217",
+            "company_id": "kestrel_technologies",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 555000.00 | 505224.10 | 871 | 0 | 12 | 12 | 0\n2024 | 571125.30 | 514859.60 | 908 | 0 | 12 | 12 | 0\n2025 | 578574.00 | 520644.20 | 903 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "555000.00",
+                "505224.10",
+                "871",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "571125.30",
+                "514859.60",
+                "908",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "578574.00",
+                "520644.20",
+                "903",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "555000.00",
+            "operating_costs": "505224.10",
+            "margin_pct": "8.968630630630630630630630631",
+            "evidence_id": "kestrel_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "571125.30",
+            "operating_costs": "514859.60",
+            "margin_pct": "9.851726057311766787428257862",
+            "evidence_id": "kestrel_technologies:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "578574.00",
+            "operating_costs": "520644.20",
+            "margin_pct": "10.01251352463124855247556924",
+            "evidence_id": "kestrel_technologies:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "lindale_holdings": {
+        "company_id": "lindale_holdings",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2023 margin 6.1635%; FY2024 margin 5.6921%; FY2025 margin 4.5318%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: lindale_holdings:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "lindale_holdings:sql:0ea39171f74d8217",
+            "company_id": "lindale_holdings",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 307800.20 | 288828.80 | 838 | 0 | 12 | 12 | 0\n2024 | 332173.70 | 313265.90 | 906 | 0 | 12 | 12 | 0\n2025 | 349598.40 | 333755.30 | 970 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "307800.20",
+                "288828.80",
+                "838",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "332173.70",
+                "313265.90",
+                "906",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "349598.40",
+                "333755.30",
+                "970",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "307800.20",
+            "operating_costs": "288828.80",
+            "margin_pct": "6.163543753382876294427359047",
+            "evidence_id": "lindale_holdings:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "332173.70",
+            "operating_costs": "313265.90",
+            "margin_pct": "5.692142394175095740571875498",
+            "evidence_id": "lindale_holdings:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "349598.40",
+            "operating_costs": "333755.30",
+            "margin_pct": "4.531799916704424276541311402",
+            "evidence_id": "lindale_holdings:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      },
+      "northwind_group": {
+        "company_id": "northwind_group",
+        "strategy": "historical",
+        "status": "complete",
+        "verdict": "FAIL",
+        "summary": "FY2023 margin 15.4631%; FY2024 margin 13.6221%; FY2025 margin 12.7612%. PASS requires all margins > 0 and FY2025 >= FY2023. Source: northwind_group:sql:0ea39171f74d8217",
+        "evidence": [
+          {
+            "evidence_id": "northwind_group:sql:0ea39171f74d8217",
+            "company_id": "northwind_group",
+            "query": "WITH revenue AS (\n    SELECT substr(order_date, 1, 4) AS year, SUM(amount) AS revenue,\n           COUNT(*) AS order_count,\n           SUM(CASE WHEN typeof(amount) IN ('integer', 'real') THEN 0 ELSE 1 END) AS invalid_orders\n    FROM orders WHERE order_date >= '2023-01-01' AND order_date < '2026-01-01'\n    GROUP BY substr(order_date, 1, 4)\n), costs AS (\n    SELECT substr(month, 1, 4) AS year,\n           SUM(cost_of_sales + selling_admin + research_development) AS operating_costs,\n           COUNT(*) AS cost_rows, COUNT(DISTINCT month) AS cost_months,\n           SUM(CASE WHEN typeof(cost_of_sales) IN ('integer', 'real')\n                     AND typeof(selling_admin) IN ('integer', 'real')\n                     AND typeof(research_development) IN ('integer', 'real')\n                    THEN 0 ELSE 1 END) AS invalid_costs\n    FROM monthly_costs WHERE month >= '2023-01' AND month < '2026-01'\n    GROUP BY substr(month, 1, 4)\n)\nSELECT r.year, r.revenue, c.operating_costs, r.order_count, r.invalid_orders,\n       c.cost_rows, c.cost_months, c.invalid_costs\nFROM revenue AS r LEFT JOIN costs AS c ON c.year = r.year ORDER BY r.year",
+            "raw_result": "year | revenue | operating_costs | order_count | invalid_orders | cost_rows | cost_months | invalid_costs\n2023 | 430499.90 | 363931.10 | 976 | 0 | 12 | 12 | 0\n2024 | 471355.40 | 407147.10 | 1082 | 0 | 12 | 12 | 0\n2025 | 536987.50 | 468461.50 | 1193 | 0 | 12 | 12 | 0",
+            "columns": [
+              "year",
+              "revenue",
+              "operating_costs",
+              "order_count",
+              "invalid_orders",
+              "cost_rows",
+              "cost_months",
+              "invalid_costs"
+            ],
+            "rows": [
+              [
+                "2023",
+                "430499.90",
+                "363931.10",
+                "976",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2024",
+                "471355.40",
+                "407147.10",
+                "1082",
+                "0",
+                "12",
+                "12",
+                "0"
+              ],
+              [
+                "2025",
+                "536987.50",
+                "468461.50",
+                "1193",
+                "0",
+                "12",
+                "12",
+                "0"
+              ]
+            ],
+            "source_tool": "sql_query"
+          }
+        ],
+        "margins": [
+          {
+            "year": 2023,
+            "revenue": "430499.90",
+            "operating_costs": "363931.10",
+            "margin_pct": "15.46313948040406048874808101",
+            "evidence_id": "northwind_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2024,
+            "revenue": "471355.40",
+            "operating_costs": "407147.10",
+            "margin_pct": "13.62205673256315722700959828",
+            "evidence_id": "northwind_group:sql:0ea39171f74d8217"
+          },
+          {
+            "year": 2025,
+            "revenue": "536987.50",
+            "operating_costs": "468461.50",
+            "margin_pct": "12.76119090295397937568379152",
+            "evidence_id": "northwind_group:sql:0ea39171f74d8217"
+          }
+        ],
+        "industry_median_pct": null,
+        "error": null
+      }
+    }
+  }
+}
