@@ -80,6 +80,9 @@ class SourcedProposition:
     certainty: Literal['asserted', 'qualified', 'unknown'] = 'unknown'
     measurement_definition: str | None = None
     definition_quotation: str | None = None
+    qualitative_text: str | None = None
+    assertion_quotation: str | None = None
+    measurement_definition_source: Literal['quoted', 'assignment_standard', 'unknown'] = 'unknown'
 
 
 @dataclass(frozen=True)
@@ -179,6 +182,7 @@ class Diagnostics:
     claim_counts: dict[str, int] = field(default_factory=dict)
     claim_cap_periods: list[str] = field(default_factory=list)
     validation_rejections: list[str] = field(default_factory=list)
+    normalization_notes: list[str] = field(default_factory=list)
 
 
 @dataclass

@@ -44,7 +44,11 @@ class ModelGateway:
             except (ValidationError, EvidenceError, TypeError) as exc:
                 # Only finite local codes enter repair instructions, never raw output.
                 allowed = {'incomplete_claim_matching', 'unknown_fact_reference',
-                           'incomplete_event_coverage', 'unknown_claim_reference'}
+                           'incomplete_event_coverage', 'unknown_claim_reference',
+                           'unsupported_numeric_value', 'unsupported_numeric_unit',
+                           'non_numeric_numeric_value', 'unsupported_qualitative_text',
+                           'unsupported_definition_quote', 'unsupported_assertion_span', 'unsupported_qualifier',
+                           'incompatible_qualitative_numeric_value'}
                 code = str(exc) if isinstance(exc, EvidenceError) and str(exc) in allowed else (
                     'schema_mismatch' if isinstance(exc, ValidationError) else 'grounding_mismatch')
                 self.diagnostics.validation_rejections.append(code)
@@ -55,5 +59,9 @@ class ModelGateway:
                 messages.append(HumanMessage(content=(
                     f'The previous candidate failed validation ({code}). Re-extract from '
                     'the ORIGINAL evidence. Use exact quotations, correct periods, and supplied '
-                    'evidence IDs only; do not add fields or numbers. This is the only recovery.')))
+                    'evidence IDs only; do not add fields or numbers. '
+                    'Use qualitative_text for quoted descriptions and value_text only for a copied numeric token. '
+                    'Do not combine a qualitative assertion with a numeric value. '
+                    'Keep unsupported definitions unknown; never invent definition wording. '
+                    'This is the only recovery.')))
         raise AssertionError('Unreachable')

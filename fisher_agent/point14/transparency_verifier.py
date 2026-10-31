@@ -93,12 +93,12 @@ class TransparencyVerifier:
                 proposition = claim.proposition
                 return bool(proposition and proposition.subject == 'company'
                             and proposition.period == event.period and proposition.metric == event.metric
-                            and proposition.assertion_type not in ('forecast', 'causal', 'unknown'))
+                            and proposition.assertion_type not in ('forecast', 'commitment', 'causal', 'unknown'))
 
             def acknowledges(claim):
                 return (same_event(claim) and claim.kind in ('acknowledges_setback', 'explanation')
                         and claim.proposition.certainty == 'asserted'
-                        and claim.proposition.assertion_type in ('change', 'event'))
+                        and claim.proposition.assertion_type in ('change', 'directional', 'event'))
 
             cited = references(candidate.claim_ids)
             materiality_sources = references(candidate.materiality_claim_ids)

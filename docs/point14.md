@@ -37,8 +37,26 @@ Named executives are recognized from a matching titled introduction anywhere in
 that transcript. Blank wording, headings, analyst speech and cross-speaker spans
 are rejected. Normalized propositions retain subject, metric, asserted period,
 assertion type, value/unit, comparison basis/period, qualifiers, certainty and
-measurement definition. Values and definition wording must be copied from the
-quotation. A copied phrase proves grounding, not semantic normalization correctness.
+measurement definition. Numeric values and supplied definition wording must be
+copied from the quotation. Missing ambiguous definitions remain unknown rather than
+invalidating otherwise sourced claims. Plain unqualified company-wide quarter
+revenue has the assignment-standard definition without a fabricated definition quote;
+`measurement_definition_source` distinguishes this from management-supplied wording.
+A copied phrase proves grounding, not semantic normalization correctness.
+
+The normalization repair separates numeric `value_text` from general sourced
+`qualitative_text`, and distinguishes directional, event, causal, forecast and
+commitment assertions. A bounded compatibility migration handles only the two
+observed legacy low/negligible value strings; it does not accept arbitrary nonnumeric
+values as missing numbers. Invented numbers, definitions and quotations remain errors
+with finite recovery codes. An explicit qualitative assertion cannot also contain a
+numeric value, even when that number occurs in the source. A numeric level missing
+its value is retained as incomplete (`incomplete_numeric_level`) and cannot support
+a numerical verdict; an explicit sourced qualitative field instead preserves its
+qualitative family. Optional `assertion_quotation` selects an exact clause
+within the already validated parent span; IDs, parent quotation, speaker and citation
+remain unchanged. A subspan cannot erase qualified parent revenue context or borrow
+another clause's qualifiers/definition. Causes and commitments remain unverified.
 
 Compatibility checks precede truth comparison: wrong company, subject, metric,
 period, accounting/ratio definition, unit or comparator cannot produce CONTRADICTED.
@@ -101,7 +119,12 @@ Labels are loaded only after decisions. Evaluation reports semantic abstentions,
 operational failures, grounded correctness and public fallback credit separately;
 legacy `failures` means all unresolved verdicts, including abstentions.
 
-Offline Option C validation: **77 tests, 76 passed and one live smoke skipped**.
+Offline Option C validation after normalization repair: **87 tests, 86 passed and
+one live smoke skipped**. Both archived first-gate responses are immutable hashed
+fixtures; replay now retains all 12 claims with unchanged IDs/quotes/spans on one
+mock invocation, preserving qualitative values as nonnumeric and distinguishing
+known standard revenue definitions from unknown definitions. This offline recovery
+does not establish a new live score.
 Source-only retrospective fixtures cover Cobalt's incompatible profit/returns
 comparison, Kestrel's direct 378/7,432 ratio, Dunmore's independent misstatement and
 admission, Ashgrove uncertainty, and Aurel's unsupported omission inference. Original

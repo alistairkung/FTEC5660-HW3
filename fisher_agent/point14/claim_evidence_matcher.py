@@ -66,7 +66,7 @@ def match_claim(claim: ManagementClaim, fact: EvidenceFact | None) -> ClaimEvide
         return result('INCOMPATIBLE', 'UNMATCHED', 'incompatible_comparator')
     if proposition.certainty != 'asserted':
         return result('UNKNOWN', 'INCONCLUSIVE', 'qualified_or_unknown_assertion')
-    if proposition.assertion_type not in ('level', 'change'):
+    if proposition.assertion_type not in ('level', 'change', 'directional'):
         return result('UNKNOWN', 'INCONCLUSIVE', 'unsupported_assertion_type')
     if proposition.value is None:
         if proposition.unit is None:
@@ -76,7 +76,7 @@ def match_claim(claim: ManagementClaim, fact: EvidenceFact | None) -> ClaimEvide
         if proposition.direction in ('low', 'high', 'stable'):
             return result('COMPATIBLE', 'INCONCLUSIVE', 'qualitative_criterion_unknown')
         if proposition.direction in ('increased', 'decreased'):
-            if proposition.assertion_type != 'change' or fact.absolute_change is None:
+            if proposition.assertion_type not in ('change', 'directional') or fact.absolute_change is None:
                 return result('UNKNOWN', 'INCONCLUSIVE', 'missing_directional_comparator')
             supported = {'increased': fact.absolute_change > 0, 'decreased': fact.absolute_change < 0}[proposition.direction]
             return result('COMPATIBLE', 'SUPPORTED' if supported else 'CONTRADICTED', 'measured_direction')
@@ -84,14 +84,14 @@ def match_claim(claim: ManagementClaim, fact: EvidenceFact | None) -> ClaimEvide
     if proposition.direction in ('low', 'high'):
         return result('COMPATIBLE', 'INCONCLUSIVE', 'qualitative_criterion_unknown')
     asserted_value = proposition.value
-    if proposition.assertion_type == 'change':
+    if proposition.assertion_type in ('change', 'directional'):
         if proposition.direction == 'decreased':
             asserted_value = -abs(asserted_value)
         elif ((proposition.direction == 'increased' and asserted_value < 0)
               or (proposition.direction == 'stable' and asserted_value != 0)):
             return result('UNKNOWN', 'INCONCLUSIVE', 'inconsistent_signed_change')
     value, unit = fact.value, fact.unit
-    if proposition.assertion_type == 'change':
+    if proposition.assertion_type in ('change', 'directional'):
         if proposition.unit == 'percent':
             value, unit = fact.percentage_change, 'percent'
         else:

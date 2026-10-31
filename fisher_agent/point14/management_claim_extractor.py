@@ -20,8 +20,11 @@ class PropositionCandidate(BaseModel):
                     'operating_costs', 'operating_profit', 'operating_margin_pct',
                     'return_rate', 'product_quality', 'demand', 'unknown'] = 'unknown'
     period: str | None = Field(default=None, pattern=r'^\d{4}Q[1-4]$')
-    assertion_type: Literal['level', 'change', 'event', 'causal', 'forecast', 'unknown'] = 'unknown'
+    assertion_type: Literal['level', 'change', 'qualitative', 'directional', 'event',
+                            'causal', 'forecast', 'commitment', 'unknown'] = 'unknown'
     value_text: str | None = None
+    qualitative_text: str | None = None
+    assertion_quotation: str | None = None
     unit: Literal['USD_thousands', 'USD_millions', 'percent', 'percentage_points', 'units'] | None = None
     basis: Literal['level', 'qoq', 'yoy'] | None = None
     comparator_period: str | None = Field(default=None, pattern=r'^\d{4}Q[1-4]$')
@@ -55,20 +58,28 @@ demand/sales difficulties, cost increases, margin pressure, setbacks, explanatio
 strong/improving performance claims. Include candid admissions and evasive answers to questions.
 Exclude analyst assertions. Keep original complete sentences or speaker turns verbatim. The
 quotation IS the management statement: do not add a paraphrase or inferred business event.
-Associate each statement only with its supplied document and reporting quarter. If a statement
-explicitly refers to a different quarter or forecasts, exclude it from current-quarter claims.
+Associate each statement with its supplied document and distinguish its asserted period.
+Preserve a forecast or replacement commitment as such, never as a current measured fact.
 Use at most three relevant claims per document: quantitative current-quarter revenue,
 returns/product-quality statements, and explicit troubles or explanations take priority.
 Extract from EVERY document, including favourable quarters. Never assess honesty or transparency.
 Normalize one proposition per quote. Subject 'company' means company-wide; retain narrower
-subjects explicitly. Keep the asserted metric, period, level/change/event/causal/forecast type,
+subjects explicitly. Keep the asserted metric, period, level/change/qualitative/directional/
+event/causal/forecast/commitment type,
 comparison basis and comparator period. Unknown fields stay null/unknown; do not infer a QoQ
 or YoY comparator from a vague 'rose'. Copy value_text verbatim from the quote when numeric;
-do not calculate it. Preserve units, exact qualifying phrases and uncertainty. 'Low' or
-'negligible' is qualitative, not a numerical zero. Do not turn quality claims into profit claims.
+do not calculate it. Put general quoted descriptions in qualitative_text, not value_text.
+A qualitative assertion must not also carry a numeric value_text.
+Directional wording without a number stays directional. Preserve units, exact qualifying
+phrases and uncertainty. 'Low' or 'negligible' is qualitative, not a numerical zero.
+Do not turn quality claims into profit claims. An optional assertion_quotation may select
+one exact clause inside a compound parent quotation; keep its qualifiers/definition wording
+inside that clause. Preserve the complete parent quotation and do not verify its other causes.
 Keep measurement_definition separate from exact definition_quotation. Copy the wording that
 supports the accounting/ratio definition; do not infer returned-units/shipped-units from vague
-'returns' or confuse monetary refunds/revenue with unit returns. Missing definitions stay null.
+'returns' or confuse monetary refunds/revenue with unit returns. Missing ambiguous definitions
+stay null. Plain unqualified company-wide quarter revenue uses the assignment's standard
+definition in Python without an invented definition_quotation. Gross/net/subset wording does not.
 """
 
 
@@ -136,28 +147,77 @@ class ManagementClaimExtractor:
                         raise EvidenceError('Unsupported quotation')
                     quote, speaker, start, end = span
                     proposal = candidate.proposition
+                    assertion_quote = quote
+                    if proposal.assertion_quotation is not None:
+                        parts = re.split(r'\s+', proposal.assertion_quotation.strip())
+                        selected = re.search(r'\s+'.join(re.escape(part) for part in parts), quote)
+                        if not proposal.assertion_quotation.strip() or selected is None:
+                            raise EvidenceError('unsupported_assertion_span')
+                        assertion_quote = selected.group(0)
+                    qualitative = proposal.qualitative_text
+                    if qualitative is not None and (not qualitative.strip() or qualitative not in assertion_quote
+                                                    or re.fullmatch(r'[+-]?\d+(?:\.\d+)?', qualitative)):
+                        raise EvidenceError('unsupported_qualitative_text')
+                    assertion_type = proposal.assertion_type
                     value = None
                     if proposal.value_text is not None:
                         token = proposal.value_text
-                        if (not re.fullmatch(r'[+-]?\d+(?:\.\d+)?', token)
-                            or not re.search(r'(?<![\d.+-])' + re.escape(token) + r'(?![\d.])', quote)):
-                            raise EvidenceError('Numeric proposition must copy its quoted value')
-                        value = Decimal(token)
-                        marker = {'USD_thousands': r'USD.*thousand', 'USD_millions': r'USD.*million',
-                                  'percent': r'%|\bpercent\b', 'percentage_points': r'percentage point',
-                                  'units': r'unit|shipment|return'}
-                        if proposal.unit is None or not re.search(marker[proposal.unit], quote, re.IGNORECASE):
-                            raise EvidenceError('Numeric proposition unit is not grounded in its quotation')
-                    if any(not qualifier.strip() or qualifier not in quote for qualifier in proposal.qualifiers):
-                        raise EvidenceError('Proposition qualifiers must quote original wording')
-                    if proposal.measurement_definition is not None and (
-                        not proposal.definition_quotation or not proposal.definition_quotation.strip()
-                        or proposal.definition_quotation not in quote):
-                        raise EvidenceError('Measurement definition needs exact source wording')
+                        if re.fullmatch(r'[+-]?\d+(?:\.\d+)?', token):
+                            if assertion_type == 'qualitative':
+                                raise EvidenceError('incompatible_qualitative_numeric_value')
+                            if not re.search(r'(?<![\d.+-])' + re.escape(token) + r'(?![\d.])', assertion_quote):
+                                raise EvidenceError('unsupported_numeric_value')
+                            value = Decimal(token)
+                            marker = {'USD_thousands': r'USD.*thousand', 'USD_millions': r'USD.*million',
+                                      'percent': r'%|\bpercent\b', 'percentage_points': r'percentage point',
+                                      'units': r'unit|shipment|return'}
+                            if proposal.unit is None or not re.search(marker[proposal.unit], assertion_quote, re.IGNORECASE):
+                                raise EvidenceError('unsupported_numeric_unit')
+                        elif (token in ('low', 'negligible') and proposal.direction == 'low'
+                              and assertion_type in ('level', 'qualitative') and proposal.unit in (None, 'percent')
+                              and qualitative in (None, token)
+                              and re.search(r'(?<!\w)' + re.escape(token) + r'(?!\w)', assertion_quote)):
+                            # Bounded compatibility for the two observed legacy outputs;
+                            # general qualitative wording belongs in qualitative_text.
+                            qualitative, assertion_type = token, 'qualitative'
+                            self.gateway.diagnostics.normalization_notes.append('legacy_qualitative_value_migrated')
+                        else:
+                            raise EvidenceError('non_numeric_numeric_value')
+                    if assertion_type == 'level' and value is None:
+                        if qualitative is not None:
+                            assertion_type = 'qualitative'
+                        else:
+                            self.gateway.diagnostics.normalization_notes.append('incomplete_numeric_level')
+                    if any(not qualifier.strip() or qualifier not in assertion_quote for qualifier in proposal.qualifiers):
+                        raise EvidenceError('unsupported_qualifier')
+                    definition = proposal.measurement_definition
+                    definition_source = 'unknown'
+                    if proposal.definition_quotation is not None:
+                        if not proposal.definition_quotation.strip() or proposal.definition_quotation not in assertion_quote:
+                            raise EvidenceError('unsupported_definition_quote')
+                        definition_source = 'quoted' if definition is not None else 'unknown'
+                    elif definition is not None or proposal.metric == 'revenue':
+                        standard = re.fullmatch(r'Revenue for the quarter was USD ([+-]?\d+(?:\.\d+)?) '
+                            r'(million|thousand)s?\.?', quote, flags=re.IGNORECASE)
+                        if (standard and proposal.metric == 'revenue' and proposal.subject == 'company'
+                            and assertion_type == 'level' and proposal.period == doc.period
+                            and proposal.basis == 'level' and proposal.comparator_period is None
+                            and not proposal.qualifiers and proposal.certainty == 'asserted'
+                            and proposal.unit == ('USD_millions' if standard.group(2).lower() == 'million' else 'USD_thousands')
+                            and proposal.value_text == standard.group(1)
+                            and definition in (None, 'sales_revenue')):
+                            definition, definition_source = 'sales_revenue', 'assignment_standard'
+                            self.gateway.diagnostics.normalization_notes.append('implicit_standard_revenue_definition')
+                        else:
+                            definition = None
+                            self.gateway.diagnostics.normalization_notes.append('measurement_definition_unknown')
                     proposition = SourcedProposition(proposal.subject, proposal.metric, proposal.period,
-                        proposal.assertion_type, value, proposal.unit, proposal.basis,
+                        assertion_type, value, proposal.unit, proposal.basis,
                         proposal.comparator_period, proposal.direction, tuple(proposal.qualifiers), proposal.certainty,
-                        proposal.measurement_definition, proposal.definition_quotation)
+                        definition, proposal.definition_quotation,
+                        qualitative_text=qualitative,
+                        assertion_quotation=assertion_quote if proposal.assertion_quotation is not None else None,
+                        measurement_definition_source=definition_source)
                     dated = re.search(r'^Date:\s*(\d{4}-\d{2}-\d{2})\s*$', doc.source.raw, re.MULTILINE)
                     try:
                         communicated = date.fromisoformat(dated.group(1)).isoformat() if dated else None
