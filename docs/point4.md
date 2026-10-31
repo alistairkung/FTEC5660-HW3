@@ -23,6 +23,9 @@ for semantic judgement. `result_validator` enforces schema, one-company source
 membership and exact contiguous quotes. Original answers, role/topic arguments and
 stable interview IDs remain in `InterviewEvidence`. `runtime` constructs only the
 lecturer's `MODEL_NAME`, with temperature 0, 600 output tokens and SDK retries off.
+Thinking is explicitly disabled with `extra_body={'thinking': {'type': 'disabled'}}`
+so DeepSeek accepts the named structured-output tool choice. The optional tracing
+smoke uses the same explicit setting.
 No other evidence source, autonomous tool selection or application label access exists.
 
 ## Bounds and failure policy
@@ -55,8 +58,11 @@ invent facts; the explicit insufficient-evidence failure policy then applies.
 ## Review limits
 
 Exact quote validation proves provenance, not semantic entailment. The interpretation
-can still be wrong; inspect the quoted passage and concise model explanation. Live
-provider support, accuracy, latency and trace ingestion need the public evaluation.
+can still be wrong; inspect the quoted passage and concise model explanation. The
+repaired public baseline produced 20/20 grounded classifications, 100% balanced
+accuracy and no operational fallbacks in 13.78 seconds; remote trace ingestion and
+closed observations were independently verified. See [evaluation results](../evaluation/point4-results.md).
+This is one full baseline; private accuracy and run-to-run variance remain unmeasured.
 Temperature zero does not guarantee repeatable model outputs. A final forced decision
 from ambiguous evidence is marked `adjudicated` so it can be reviewed separately.
 Supporting modules follow the workspace package convention; final submission should

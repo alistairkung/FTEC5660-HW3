@@ -1,36 +1,44 @@
 # Point 4 evaluation status — 31 October 2026
 
-The real-model public evaluation has **not run**. Preflight found configured
-DeepSeek and Langfuse credentials, but this execution environment could not resolve
-either `api.deepseek.com` or the configured `cloud.langfuse.com`.
-Both returned `socket.gaierror: [Errno 8] nodename nor servname provided, or not known`.
-No paid model call or public company interview was made by this implementation task.
-No successful trace ingestion or retrieval is claimed. Shell Git access also failed
-DNS resolution; GitHub connector access remained available.
+Independent live validation of the configuration repair completed successfully.
+The required `deepseek-v4-flash` model now explicitly disables thinking through
+`extra_body={'thinking': {'type': 'disabled'}}`, allowing the existing named
+`SalesAssessment` tool choice. Prompts, schema, interview routing and budgets are
+unchanged. Before this repair, all 20 requests were rejected with HTTP 400 because
+thinking mode does not support the forced tool choice.
 
-| Requested live measurement | Result |
+One company passed the initial live gate, followed by three additional positive/
+negative examples. The table reports the subsequent full 20-company baseline only:
+
+| Measurement | Result |
 | --- | --- |
-| Correct classifications out of 20 | Not measured |
-| PASS recall / FAIL recall / balanced accuracy | Not measured |
-| Misclassified companies | Unknown |
-| Interviews per company / fallback activations | Not measured |
-| Final adjudication frequency | Not measured |
-| Model calls / token usage | No live model calls; usage unavailable |
-| Langfuse ingestion and retrieval | Not verified |
+| Grounded correct classifications | 20/20 (100%) |
+| PASS recall / FAIL recall / balanced accuracy | 100% / 100% / 100% |
+| Misclassified companies | None |
+| Interviews per company | One customer interview on `sales_team` |
+| Conditional competitor interviews / final adjudications | 0 / 0 |
+| Invalid outputs / parsing repairs / operational fallbacks | 0 / 0 / 0 |
+| Model calls | 20 |
+| Input / output / total tokens | 13,294 / 2,536 / 15,830 |
+| Wall runtime, concurrency two | 13.77685 seconds |
+| Langfuse ingestion and retrieval | Independently confirmed; observations closed |
 
-Offline verification: `python -m unittest discover -s test -v` ran 42 tests:
-41 passed and one optional paid smoke test was skipped. Tests use fake LangChain
-models/tools and a mocked Langfuse backend; they are not an accuracy measurement.
-They cover all workflow branches, quote/schema validation, bounded recovery,
-company isolation, deadlines, cancellation, scoring and evaluation serialization.
+All correct verdicts were evidence-backed; no score came from fallback FAILs.
+Offline verification: `python -m unittest discover -s test -v` ran 44 tests:
+43 passed and one optional paid smoke test was skipped. The new regression exercises
+real LangChain/SDK serialization through an offline HTTP transport, checking disabled
+thinking and the named tool choice together. Existing tests cover workflow branches,
+quote/schema validation, bounded recovery, company isolation, deadlines, cancellation
+and evaluation serialization. Protected lecturer code and public data are unchanged.
 
-Once shell networking is available, run:
+Reproduce from the repository root with dependencies and `.env` configured:
 
 ```bash
-python -m evaluation.point4 --live --data-folder public_test --output evaluation/point4-baseline.json
+python -m evaluation.point4 --live --data-folder public_test --output .venv/point4-baseline.json
 ```
 
-Keep that baseline file before making any prompt changes. Compare its metrics and
-inspect the saved interviews, assessments, diagnostics and trace IDs. Retrieve the
-traces from Langfuse to verify remote delivery, nesting, metadata and generation
-usage. No prompt tuning against public companies has been performed.
+Keep generated results local and ignored. The output retains original interviews,
+validated assessments, diagnostics, usage and trace IDs. Ground truth is read only
+after predictions. This is one full baseline, preceded by small execution gates;
+it does not establish private-company accuracy or run-to-run variance. No rubric,
+threshold or prompt tuning against the public results was performed.

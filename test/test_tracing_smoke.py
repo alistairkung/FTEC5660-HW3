@@ -2,7 +2,9 @@
 
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from langchain_core.messages import AIMessage
 
 from observability.smoke import smoke
 
@@ -19,6 +21,25 @@ class SmokeGuardTests(unittest.IsolatedAsyncioTestCase):
         ):
             with self.assertRaisesRegex(RuntimeError, "requires DeepSeek and Langfuse"):
                 await smoke()
+
+    async def test_smoke_model_explicitly_disables_thinking(self):
+        model = MagicMock()
+        model.ainvoke = AsyncMock(return_value=AIMessage(
+            content='TRACE_OK', usage_metadata={'input_tokens': 2, 'output_tokens': 2, 'total_tokens': 4}))
+        tracing = MagicMock()
+        tracing.__enter__.return_value = tracing
+        tracing.enabled = True
+        tracing.config.return_value = {}
+        tracing.observation.return_value.__enter__.return_value.trace_id = 'a' * 32
+        environment = {'LANGFUSE_LIVE_SMOKE': 'true', 'DEEPSEEK_API_KEY': 'synthetic',
+                       'LANGFUSE_PUBLIC_KEY': 'synthetic', 'LANGFUSE_SECRET_KEY': 'synthetic',
+                       'LANGFUSE_BASE_URL': 'https://example.invalid'}
+        with patch('observability.smoke.hw3.load_env_file'), patch.dict(os.environ, environment, clear=True), \
+                patch('observability.smoke.Tracing', return_value=tracing), \
+                patch('langchain_deepseek.ChatDeepSeek', return_value=model) as constructor:
+            await smoke()
+        self.assertEqual(constructor.call_args.kwargs['extra_body'],
+                         {'thinking': {'type': 'disabled'}})
 
 
 @unittest.skipUnless(os.getenv("LANGFUSE_LIVE_SMOKE", "false").lower() == "true",
