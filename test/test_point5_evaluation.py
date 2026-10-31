@@ -40,8 +40,14 @@ class Point5EvaluationTests(unittest.TestCase):
 
     def test_runtime_package_has_no_label_or_evaluation_dependencies(self):
         runtime = Path(__file__).resolve().parents[1] / 'fisher_agent'
-        forbidden = {'evaluation', 'hw3', 'sqlite3', 'langchain_deepseek'}
+        margin_modules = {'contracts.py', 'evidence_retriever.py', 'point_rules.py',
+                          'historical_margin_strategy.py', 'industry_margin_strategy.py'}
+        self.assertTrue(all((runtime / name).is_file() for name in margin_modules))
         for path in runtime.glob('*.py'):
+            forbidden = {'evaluation', 'sqlite3'}
+            # Other specialists construct permitted models; Point 5 stays deterministic.
+            if path.name in margin_modules:
+                forbidden |= {'hw3', 'langchain_deepseek'}
             tree = ast.parse(path.read_text())
             for node in ast.walk(tree):
                 names = ([node.module] if isinstance(node, ast.ImportFrom) else

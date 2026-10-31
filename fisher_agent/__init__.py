@@ -1,1 +1,1 @@
-"""Student-owned Fisher assessment components."""
+"""Student-owned Fisher specialists; no import-time clients or evidence."""

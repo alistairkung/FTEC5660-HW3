@@ -441,3 +441,42 @@ flowchart TD
 
 ### Results
 > your point score on `public_test`, the companies where your verdicts disagree with the public answers, and why.
+
+## Point 4 development slice
+
+The independently testable sales specialist is implemented in `fisher_agent/`.
+It uses the customer `sales_team` interview first, consults the competitor only
+after a valid UNCERTAIN assessment, then makes one final adjudication if needed.
+Quotes and source IDs are checked in Python. The model judges their meaning.
+
+This slice leaves `hw3.py` and `CHOSEN_POINTS` unchanged: the lecturer runner
+still requires three points. It does not implement the remaining points or a
+combined company summary. See [Point 4 design and limits](docs/point4.md).
+
+Run offline checks without credentials or services:
+
+```bash
+python -m unittest discover -s test -v
+```
+
+Run the development evaluation from the repository root (paid DeepSeek calls):
+
+```bash
+python -m evaluation.point4 --live --data-folder public_test --output evaluation/point4-latest.json
+```
+
+The runner uses the unchanged lecturer tool factory, predicts before loading
+labels, and writes every company's original interviews, validated assessments,
+diagnostics, interview/model counts, usage and trace ID. It prints PASS recall,
+FAIL recall, balanced accuracy and misclassifications. Operational fallback
+matches are counted separately from grounded correct assessments. Exit code 2
+means at least one company did not receive a supported final assessment.
+
+Optional tracing uses the same `.env` configuration above and closes one shared
+lifecycle after all companies finish. Filter Langfuse by `fisher_point=4` and
+`company_id`; inspect `assess-sales`, `classify-sales-initial`, `reassess-sales`
+and `adjudicate-sales`. Native callbacks capture interview calls and generations
+with available token usage. Diagnostic observations distinguish uncertainty,
+invalid output and API/retrieval failures. JSON trace IDs do not prove ingestion.
+
+Current measured status and rerun instructions: [Point 4 evaluation](evaluation/point4-results.md).

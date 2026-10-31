@@ -37,7 +37,8 @@ async def smoke() -> str:
                                 run_name="smoke-model-and-tools")
         with tracing.observation("hw3-observability-smoke", company_id="observability-smoke",
                                  fisher_point=1, input={"purpose": "synthetic tracing check"}) as root:
-            model = ChatDeepSeek(model=hw3.MODEL_NAME, timeout=30, max_retries=0, max_tokens=16)
+            model = ChatDeepSeek(model=hw3.MODEL_NAME, timeout=30, max_retries=0, max_tokens=16,
+                                 extra_body={"thinking": {"type": "disabled"}})
             response = await model.ainvoke("Reply with TRACE_OK only.", config=config)
             if not response.usage_metadata or response.usage_metadata.get("total_tokens", 0) <= 0:
                 raise RuntimeError("DeepSeek did not return token usage metadata")
