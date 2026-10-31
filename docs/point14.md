@@ -88,7 +88,7 @@ The development scorer counts unresolved errors wrong, even if fallback FAIL wou
 coincidentally match a label.
 
 **Shared-contract dependency:** no `PointResult` exists on the chosen committed
-foundation (`db218bc`). Point 4's uncommitted `SalesResult` and Point 5's
+foundation (`db218bc`). Point 4's `SalesResult` and Point 5's
 `MarginResult` are different specialist records. This change therefore adds only
 an owned `TransparencyResult`, not a replacement shared contract or a conflicting
 `fisher_agent/contracts.py`. Integration must adapt these fields to the eventual
@@ -125,8 +125,9 @@ remain **unverified**. Offline tests validate control flow and evidence contract
 not the model's semantic accuracy. Financial evidence does not currently include
 cash flow or returns; setbacks limited to those indicators may be missed.
 
-The PR is based on the committed optional-observability foundation, ahead of main.
-Merge that foundation first to keep this PR's effective diff limited to Point 14.
+The branch was created from the committed optional-observability foundation while
+main was still the starter. Foundation PR #1 merged during this work. The Point 14
+PR now has exactly 16 additive files against main and GitHub reports a clean merge.
 There are no edits to shared package infrastructure, README, `hw3.py`, Points 4/5,
 requirements or observability. The integration task must wire the shared result
 adapter and homework runner, evaluate the complete submission and finish the report.
