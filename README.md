@@ -304,6 +304,59 @@ configuration. Compare the trace with Langfuse's
 [LangChain integration](https://langfuse.com/integrations/frameworks/langchain).
 This integration follows the [Langfuse AI skill](https://github.com/langfuse/skills/tree/main/skills/langfuse).
 
+## Point 5 strategy experiment (development only)
+
+Two interchangeable `MarginStrategy` implementations expose
+`evaluate(company_id, sql_query) -> MarginResult` in `fisher_agent/`:
+
+- `IndustryMarginStrategy`: FY2025 operating margin >= the company's own industry median.
+- `HistoricalMarginStrategy`: FY2023–2025 operating margins all > 0, and FY2025 >= FY2023.
+
+Both use only the supplied LangChain SQL tool. Revenue and costs are aggregated
+separately before joining, and Python computes
+`100 * (revenue - operating_costs) / revenue` with `Decimal`. Costs include cost
+of sales, selling/admin and R&D; monetary inputs stay in USD thousands. Rules
+use unrounded calculated margins in percentage points. No model calls are made.
+
+Results contain typed annual metrics, original SQL text/results, parsed rows,
+company-scoped evidence IDs and a rule summary. Missing/duplicate annual rows,
+incomplete monthly costs, null/nonnumeric amounts, nonfinite values, nonpositive
+revenue, invalid/missing medians, truncated responses and SQL failures produce
+`status='error', verdict=None`, distinct from an evidence-backed FAIL. There are
+no retries or interviews. A later grading integration must choose its public
+failure mapping explicitly.
+
+Run the comparison and offline checks from the repository root:
+
+```bash
+python -m evaluation.compare_point5
+python -m unittest discover -s test -v
+```
+
+The comparison invokes the unchanged lecturer tool factory, executes both
+strategies for all public companies, **then** loads Point 5 ground truth for
+scoring. Errors count as incorrect for their true class; their diagnostics are
+reported separately. Labels never reach runtime strategies or trace payloads.
+`--data-folder` and `--output` can select another development fixture and report.
+
+See [comparison findings](evaluation/point5_comparison.md) and
+[full evidence/results](evaluation/point5_results.json). Industry achieves 100%
+balanced accuracy; Historical achieves 52.38%. Industry is recommended for
+review on both assessment fit and public evidence; no winner is wired into
+`hw3.py`. Point 4, Point 14, `CHOSEN_POINTS` and the three-point runner are unchanged.
+
+Optional tracing uses the existing lifecycle and closes/flushes on completion:
+
+```bash
+python -m evaluation.compare_point5 --trace
+```
+
+With the optional SDK and configured credentials, this creates `point5-industry`
+and `point5-historical` spans with company ID, Fisher point 5, result, errors and
+SQL provenance. Without credentials it still runs. Without `--trace`, the runner
+does not initialize Langfuse or load `.env`. No DeepSeek call or API key is needed
+for this experiment. Trace payloads are tested offline; live delivery is unverified.
+
 ## Homework 3 solution:
 > to students: this is your report, see the homework description.
 
