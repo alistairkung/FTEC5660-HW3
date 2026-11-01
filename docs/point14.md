@@ -123,7 +123,11 @@ FAIL path remains unreachable in normal validation. The diagnostic
 availability nor management's title supplies the missing premise. This is a chosen
 conservative evidence boundary, not a requirement to prove fraudulent intent.
 Critical unknowns about measurement, materiality, coverage or knowledge preserve
-INSUFFICIENT_EVIDENCE. Fully resolved candid disclosures can produce TRANSPARENT;
+INSUFFICIENT_EVIDENCE. The current profile also vetoes PASS on every unmatched claim
+and unresolved adverse candidate, even an unmeasured demand description or a small
+movement. That is our chosen conservative profile, not a universal Fisher rule;
+its effect must be distinguished from genuine missing impact/knowledge evidence.
+Fully resolved candid disclosures can produce TRANSPARENT;
 only TRANSPARENT produces PASS. No public labels or company-specific rules enter
 runtime.
 
@@ -131,6 +135,20 @@ Prepared event IDs are now enumerated in the per-company Pydantic schema and
 payload. Every prepared ID must occur exactly once; unknown, duplicate and missing
 IDs have distinct finite rejection codes. Fact periods never authorize invented
 events. The same single recovery remains available.
+
+## Latest bounded gate — 1 November 2026
+
+The semantic-reliability repair ran only Ashgrove, Aurel, Dunmore and Kestrel,
+serially: **zero supported binary verdicts, three valid semantic abstentions and
+one operational verification failure**. All 47 extracted claims were source-verified.
+The run used 11 model calls, 160,775 tokens and 68.043 seconds; strict grounded
+accuracy/BA are 0%, with one coincidental public FAIL-fallback credit kept separate.
+All six verification attempts respected prepared event IDs. Dunmore retained both
+the independent revenue contradiction and candid returns admission. The stop
+condition was met: **no full 20-company expansion or further automatic classifier
+repair is justified under the current corpus and strict policy**. Point 14 remains
+NOT READY; the evidence findings may still serve as diagnostics. See the
+[gate report and retrieved traces](../evaluation/point14-semantic-reliability.md).
 
 ## Execution and evaluation
 
