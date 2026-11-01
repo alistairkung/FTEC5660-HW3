@@ -21,7 +21,7 @@ flowchart TD
 `EvidenceInterpreter` uses LangChain structured function output (`SalesAssessment`)
 for semantic judgement. `result_validator` enforces schema, one-company source
 membership and exact contiguous quotes. Original answers, role/topic arguments and
-stable interview IDs remain in `InterviewEvidence`. `runtime` constructs only the
+stable interview IDs remain in `InterviewEvidence`. `bootstrap` constructs only the
 lecturer's `MODEL_NAME`, with temperature 0, 600 output tokens and SDK retries off.
 Thinking is explicitly disabled with `extra_body={'thinking': {'type': 'disabled'}}`
 so DeepSeek accepts the named structured-output tool choice. The optional tracing
