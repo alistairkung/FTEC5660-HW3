@@ -1,6 +1,8 @@
 """Relevant-call provenance and event aggregation, with injected models/tools."""
 import unittest
 import asyncio
+import json
+from pathlib import Path
 from unittest.mock import patch
 from langchain_core.messages import AIMessage
 
@@ -32,6 +34,29 @@ def proposal(**changes):
 
 
 class ReturnsDisclosureValidationTests(unittest.TestCase):
+    def test_recorded_calls_and_synthetic_paraphrase_pass_only_provenance_gates(self):
+        """Typed proposals are supplied here; no live paraphrase accuracy is claimed."""
+        documents=json.loads((Path(__file__).parent/'fixtures/returns_disclosure_calls.json').read_text())
+        calls=[]
+        for item in documents:
+            source=SourceEvidence(item['company_id']+':recorded-call',item['company_id'],
+                item['source_tool'],item['arguments'],item['raw'])
+            calls.append(validate_call(item['period'],item['document'],item['date'],source))
+        admission=DisclosureAssessment(document=calls[0].name,quarter=calls[0].period,
+            classification='ACKNOWLEDGED',quotation='Returns rose sharply this quarter because of a faulty batch of labelling line parts.',
+            speaker='Olivia Brennan (Chief Financial Officer)',full_call_inspected=True,
+            reason='Management explicitly acknowledges the returns setback.')
+        self.assertEqual(validate_assessment(admission,calls[0]).classification,'ACKNOWLEDGED')
+        negative=DisclosureAssessment(document=calls[1].name,quarter=calls[1].period,
+            classification='NOT_ACKNOWLEDGED',quotation=None,speaker=None,full_call_inspected=True,
+            reason='The inspected relevant call contains reassurance, not acknowledgement.')
+        self.assertEqual(validate_assessment(negative,calls[1]).classification,'NOT_ACKNOWLEDGED')
+        with self.assertRaisesRegex(ValueError,'^invalid_management_quotation$'):
+            validate_assessment(admission.model_copy(update={'document':calls[1].name,'quarter':calls[1].period}),calls[1])
+        paraphrase='We saw an unusual surge in returned units this quarter and are addressing the defect.'
+        synthetic=call(TEXT.replace('Returns rose sharply this quarter.',paraphrase))
+        self.assertEqual(validate_assessment(proposal(quotation=paraphrase),synthetic).quotation,paraphrase)
+
     def test_management_exact_quote_and_source_derived_alias(self):
         self.assertEqual(validate_assessment(proposal(),call()).classification,'ACKNOWLEDGED')
         self.assertEqual(validate_assessment(proposal(quotation='We are working on it.',speaker='Olivia Chen'),call()).speaker,
@@ -176,6 +201,30 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('Other events remain unresolved',run.point_result.summary)
         self.assertTrue(any(d.code=='disclosure_uncertain' and d.stage=='2025Q4'
                             for d in run.point_result.diagnostics))
+
+    async def test_multiple_anomalies_all_acknowledged_or_one_clean_negative(self):
+        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from test_returns_evidence import baseline_rows,raw_rows
+        for second_classification,expected in (('ACKNOWLEDGED','PASS'),('NOT_ACKNOWLEDGED','FAIL')):
+            with self.subTest(classification=second_classification):
+                rows=baseline_rows();rows[4]=('2025Q3',3,3,3,1000,20);rows[5]=('2025Q4',3,3,3,1000,40)
+                tools=self.tools();tools[0].answer=raw_rows(rows)
+                tools[1].answer+='\nearnings_call_2025q4.md: Example (Date: 2026-01-29)'
+                second_text=TEXT.replace('third quarter 2025','fourth quarter 2025').replace('2025-10-29','2026-01-29')
+                if second_classification=='NOT_ACKNOWLEDGED':
+                    second_text=second_text.replace('Returns rose sharply this quarter. We are replacing affected units.',
+                                                  'Product quality remained excellent and returns were negligible.')
+                tools[2].answer=lambda args: second_text if '2025q4' in args['name'] else TEXT
+                second=proposal(classification=second_classification,
+                    quotation='Returns rose sharply this quarter.' if second_classification=='ACKNOWLEDGED' else None,
+                    speaker='Olivia Chen (Chief Financial Officer)' if second_classification=='ACKNOWLEDGED' else None)
+                second=second.model_copy(update={'document':'earnings_call_2025q4.md','quarter':'2025Q4',
+                    'reason':'Management admits the setback.' if expected=='PASS' else 'Management does not acknowledge the setback.'})
+                run=await Point14ReturnsStrategy(Model([proposal(),second])).assess('example',tools)
+                self.assertEqual((run.point_result.verdict,run.point_result.status),(expected,'complete'))
+                self.assertEqual((run.model_calls,run.format_repairs),(2,0))
+                self.assertEqual([t.calls for t in tools],[1,1,2])
+                self.assertFalse(run.point_result.diagnostics)
 
     async def test_sql_failure_missing_call_and_api_error_are_not_investment_fails(self):
         from fisher_agent.returns_disclosure import Point14ReturnsStrategy

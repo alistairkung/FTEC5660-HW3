@@ -1,6 +1,6 @@
 # Point 14 — Returns-disclosure experiment
 
-This independent experiment is **offline validated; live gate pending**. It does not
+This independent experiment is **READY FOR INTEGRATION EXPERIMENT within its fixed scope**. It does not
 replace PR #5, select a strategy in `hw3.py`, or integrate the three specialists.
 The research dataset has already been inspected: public performance is not held-out
 validation or a universal test of Fisher's Point 14.
@@ -92,7 +92,7 @@ configuration, per-company traces and measured interview counters.
 
 ## Offline measurement — 1 November 2026
 
-Full suite: **108 tests; 107 passed and one opt-in live smoke skipped**, including
+Current full suite: **110 tests; 109 passed and one opt-in live smoke skipped**, including
 all 83 existing tests unchanged. New coverage includes exact/pooled threshold,
 zero baselines, provenance, bad SQL/counts, speaker/quote gates, all assessment
 states, one repair, timeouts, cancellation, concurrency/isolation, partial FAIL,
@@ -103,6 +103,20 @@ no-anomaly companies; zero documents, models, interviews or labels**. Measured
 calculation/tool wall time was 0.0160 seconds. The flagged quarters reproduce the
 prior read-only research; no model acknowledgement performance is claimed yet.
 Local ignored artifact: `.review/returns-financial-required-eight.json`.
+
+## Live public baseline — 1 November 2026
+
+After a successful three-case gate, one unchanged 20-company run produced **20/20
+grounded correct, 100% balanced accuracy, PASS recall 14/14 and FAIL recall 6/6**.
+It used 12 model calls, 12,221 input + 2,363 output = 14,584 tokens and 9.695 seconds
+at concurrency two. No repairs, errors, abstentions, fallback credits or interviews.
+Six anomalous quarters were acknowledged, six were not; eight companies had no
+anomaly and made no document/model calls. See the [per-company results and traces](../evaluation/returns-disclosure-results.md).
+All 20 traces were retrieved remotely (216 closed observations, complete parent links),
+with source/quotation checks and exact usage reconciliation. These results do not
+change the scope limitations below; this is not a final submission or automatic
+replacement of another Fisher point. Final integration remains
+separate and requires explicit instruction.
 
 ## Limits
 
