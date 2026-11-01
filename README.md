@@ -174,13 +174,15 @@ names and wording, and scores your 3 points only.
 
 ### My 3 points and rules
 
-I selected three complementary aspects of Fisher's framework: the quality of the sales organisation (Point 4), financial performance relative to industry peers (Point 5), and management's willingness to disclose setbacks (Point 14). This combination lets the agent use the different evidence sources available in the assignment—interviews, financial data, and earnings calls—while defining an explicit PASS rule for each point.
+I chose three complementary aspects of Fisher's framework, each grounded in a different kind of supplied evidence. The rules deliberately use observable indicators rather than asking the model to make unsupported general investment judgements.
 
-| Point | Fisher criterion | Supplied evidence | PASS rule |
+| Point | Why I chose it | Evidence used | PASS rule |
 | --- | --- | --- | --- |
-| **4** | Above-average sales organisation | Customer `sales_team` interview; competitor interview only after validated uncertainty | Concrete evidence of knowledgeable sales support, consultative problem solving, customer value or favourable sales effectiveness. |
-| **5** | Worthwhile profit margins | SQL: FY2025 revenue, operating costs and the company's own industry median | `IndustryMarginStrategy`: FY2025 operating margin is at least the matching industry median; arithmetic uses Python `Decimal`. |
-| **14** | Management discusses troubles openly | SQL: monthly shipments/returns; complete same-quarter earnings calls for detected anomalies | PASS if no quarterly return-rate anomalies occur, or every anomaly is acknowledged. An anomaly is a rate at least twice the pooled preceding-four-quarter rate; zero current and baseline returns means no anomaly. |
+| **4 — Above-average sales organisation** | Sales capability is difficult to judge from financial figures alone, so I wanted to apply Fisher's scuttlebutt approach to first-hand accounts of how the company serves customers. | A customer interview on `sales_team`, with a competitor interview only if the validated customer assessment is uncertain. | PASS when a validated interview assessment finds concrete favourable evidence of knowledgeable sales support, consultative problem-solving, customer value or sales effectiveness. Otherwise a supported negative assessment is FAIL; unresolved evidence remains explicitly marked as such internally. |
+| **5 — Worthwhile profit margins** | I wanted a transparent, reproducible financial test rather than relying on the model's subjective view of whether a margin is good. An industry-relative benchmark accounts for differences in what constitutes a worthwhile margin across sectors. | SQL-derived FY2025 revenue and operating costs, plus the median operating margin for the company's own industry. | PASS when FY2025 operating margin is **greater than or equal to** the matching industry median. The `IndustryMarginStrategy` performs the calculation with Python `Decimal`. |
+| **14 — Management talks openly about difficulties** | I chose this to examine whether management is candid when performance is disappointing, a dimension neither sales interviews nor margin calculations capture. I scoped the test to measurable returns/quality setbacks so that omissions could be checked against actual events. | SQL-derived quarterly units shipped and returned, compared with a pooled preceding-four-quarter baseline; complete same-quarter earnings calls for quarters with detected anomalies. | PASS if no quarterly return-rate anomaly is detected, or if management acknowledges **every** detected anomaly in the relevant earnings call. An anomaly means the current rate is at least twice the pooled preceding-four-quarter rate; if both current and baseline returns are zero, no anomaly is recorded. |
+
+For Point 14, this is a deliberately narrow, evidence-testable proxy for Fisher's broader concern about management transparency, not a claim to assess every form of nondisclosure.
 
 ### Design
 
