@@ -71,14 +71,9 @@ def build_agent() -> Any:
     from .env. Each company has its own tools (see ``analyze_companies``), so
     you will probably create one tool-calling agent per company there.
     """
-    from fisher_agent.company_analyzer import CompanyAnalyzer
-    from fisher_agent.runtime import build_sales_specialist
-    from fisher_agent.returns_disclosure import build_returns_strategy
-    from observability import current_tracing
+    from fisher_agent.bootstrap import build_agent as build_application
 
-    tracing = current_tracing()
-    return CompanyAnalyzer(build_sales_specialist(tracing),
-                           returns_strategy=build_returns_strategy(tracing), tracing=tracing)
+    return build_application(MODEL_NAME)
 
 
 async def analyze_companies(agent: Any, companies: dict[str, list[Any]]) -> dict[str, dict[str, Any]]:

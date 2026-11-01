@@ -5,11 +5,11 @@ from unittest.mock import patch
 
 from fisher_agent.company_analyzer import CompanyAnalyzer
 from fisher_agent.contracts import Diagnostic, PointResult, ProvenanceReference
-from fisher_agent.evidence_interpreter import EvidenceInterpreter
-from fisher_agent.margin_runner import MarginRunner
-from fisher_agent.returns_disclosure import Point14ReturnsStrategy
-from fisher_agent.returns_disclosure.records import ReturnsRun
-from fisher_agent.sales_specialist import SalesSpecialist
+from fisher_agent.point4.evidence_interpreter import EvidenceInterpreter
+from fisher_agent.point5.margin_runner import MarginRunner
+from fisher_agent.point14 import Point14ReturnsStrategy
+from fisher_agent.point14.records import ReturnsRun
+from fisher_agent.point4.sales_specialist import SalesSpecialist
 from test_industry_margin_strategy import FakeSQL, annual
 from test_returns_evidence import baseline_rows, raw_rows
 from test_sales_specialist import ScriptedModel, decision, interviews

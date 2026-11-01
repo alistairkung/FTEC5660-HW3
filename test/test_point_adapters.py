@@ -1,8 +1,9 @@
 import unittest
 
-from fisher_agent.point_adapters import adapt_sales, adapt_margin
-from fisher_agent.sales_records import InterviewEvidence, SalesAssessment, SalesResult
-from fisher_agent.industry_margin_strategy import IndustryMarginStrategy
+from fisher_agent.point4.result_adapter import adapt_sales
+from fisher_agent.point5.result_adapter import adapt_margin
+from fisher_agent.point4.sales_records import InterviewEvidence, SalesAssessment, SalesResult
+from fisher_agent.point5.industry_margin_strategy import IndustryMarginStrategy
 from test_industry_margin_strategy import FakeSQL
 
 

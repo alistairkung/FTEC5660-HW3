@@ -1,7 +1,7 @@
 from decimal import Decimal
 import unittest
 
-from fisher_agent.industry_margin_strategy import IndustryMarginStrategy
+from fisher_agent.point5.industry_margin_strategy import IndustryMarginStrategy
 
 
 ANNUAL_HEADER = ('year | revenue | operating_costs | order_count | invalid_orders | '

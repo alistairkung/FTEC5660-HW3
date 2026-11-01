@@ -50,14 +50,14 @@ There is no runtime FAIL fallback.
 
 ## Interface and execution bounds
 
-`fisher_agent.returns_disclosure.Point14ReturnsStrategy` provides:
+`fisher_agent.point14.Point14ReturnsStrategy` provides:
 
 - `evaluate(company_id, tools) -> PointResult`: existing shared contract, point 14.
 - `assess(...) -> ReturnsRun`: original tool evidence, company/source-linked counts
   and rate comparisons, event findings, diagnostics, model/tool counts and usage.
 - `assess_companies(..., concurrency=1|2)`: isolated company workers.
 
-`build_returns_strategy(tracing=None)` constructs the existing LangChain
+`fisher_agent.bootstrap.build_returns_strategy(model_name, tracing=None)` constructs the existing LangChain
 `deepseek-v4-flash` model with thinking disabled, temperature 0, 600 output tokens,
 SDK retries 0 and function-calling structured output. One normal assessment per
 anomalous quarter permits at most one format/provenance repair over unchanged

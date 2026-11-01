@@ -6,7 +6,8 @@ from unittest.mock import patch
 import httpx
 from langchain_deepseek import ChatDeepSeek
 
-from fisher_agent.returns_disclosure import build_returns_strategy
+import hw3
+from fisher_agent.bootstrap import build_returns_strategy
 import test_returns_disclosure as disclosure_tests
 
 
@@ -33,7 +34,7 @@ class ReturnsRuntimeTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(kwargs['timeout'],20)
                 return ChatDeepSeek(**kwargs,api_key='synthetic-test-key',http_async_client=client)
             with patch('langchain_deepseek.ChatDeepSeek',side_effect=construct):
-                strategy=build_returns_strategy()
+                strategy=build_returns_strategy(hw3.MODEL_NAME)
             run=await strategy.assess('example',disclosure_tests.ReturnsStrategyTests().tools())
         self.assertEqual(run.point_result.verdict,'PASS')
         self.assertEqual(run.model_calls,1)

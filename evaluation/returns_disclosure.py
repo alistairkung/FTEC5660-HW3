@@ -11,10 +11,11 @@ from pathlib import Path
 import subprocess
 from time import monotonic
 
-from fisher_agent.returns_disclosure import Point14ReturnsStrategy, build_returns_strategy
-from fisher_agent.returns_disclosure.point14_returns_strategy import (PROMPT_VERSION, DISCLOSURE_PROMPT,
+from fisher_agent.point14 import Point14ReturnsStrategy
+from fisher_agent.bootstrap import build_returns_strategy
+from fisher_agent.point14.point14_returns_strategy import (PROMPT_VERSION, DISCLOSURE_PROMPT,
     COMPANY_DEADLINE_SECONDS, MODEL_TIMEOUT_SECONDS, TOOL_TIMEOUT_SECONDS, MAX_MODEL_CALLS)
-from fisher_agent.returns_disclosure.records import ReturnsRun
+from fisher_agent.point14.records import ReturnsRun
 from observability import Tracing
 
 
@@ -90,7 +91,7 @@ def main() -> int:
     lifecycle = Tracing() if args.trace else nullcontext(None)
     started = monotonic()
     with lifecycle as tracing:
-        strategy = build_returns_strategy(tracing) if args.live else Point14ReturnsStrategy(tracing=tracing)
+        strategy = build_returns_strategy(hw3.MODEL_NAME, tracing) if args.live else Point14ReturnsStrategy(tracing=tracing)
         # Each assess() owns a company root; the lifecycle is shared, context is not.
         runs = asyncio.run(strategy.assess_companies(tools,concurrency=args.concurrency,
                                                    financial_only=args.financial_only))
@@ -111,9 +112,10 @@ def main() -> int:
         'companies':list(runs),'concurrency':args.concurrency,'data_folder':str(args.data_folder),
         'model':hw3.MODEL_NAME if args.live else None,'thinking':'disabled' if args.live else None,
         'temperature':0 if args.live else None,'max_tokens':600 if args.live else None}
-    source_dir = Path(__file__).resolve().parents[1]/'fisher_agent'/'returns_disclosure'
+    source_dir = Path(__file__).resolve().parents[1]/'fisher_agent'/'point14'
     config.update(prompt_sha256=sha256(DISCLOSURE_PROMPT.encode()).hexdigest(),
-        source_sha256={file.name:sha256(file.read_bytes()).hexdigest() for file in sorted(source_dir.glob('*.py'))},
+        source_sha256={file.name:sha256(file.read_bytes()).hexdigest()
+                       for file in [*sorted(source_dir.glob('*.py')),source_dir.parent/'bootstrap.py']},
         company_deadline_seconds=COMPANY_DEADLINE_SECONDS,model_timeout_seconds=MODEL_TIMEOUT_SECONDS,
         tool_timeout_seconds=TOOL_TIMEOUT_SECONDS,max_model_calls=MAX_MODEL_CALLS)
     artifact = {'configuration':config,'summary':summary,'scores':scores,'wall_seconds':wall_seconds,

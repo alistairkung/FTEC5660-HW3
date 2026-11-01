@@ -8,8 +8,8 @@ from unittest.mock import patch
 
 from evaluation.returns_disclosure import main, score_runs
 from fisher_agent.contracts import PointResult, ProvenanceReference
-from fisher_agent.returns_disclosure import Point14ReturnsStrategy
-from fisher_agent.returns_disclosure.records import ReturnsRun
+from fisher_agent.point14 import Point14ReturnsStrategy
+from fisher_agent.point14.records import ReturnsRun
 import test_returns_disclosure as fixtures
 from test_returns_evidence import raw_rows,baseline_rows
 

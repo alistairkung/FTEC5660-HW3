@@ -6,8 +6,8 @@ from pathlib import Path
 from unittest.mock import patch
 from langchain_core.messages import AIMessage
 
-from fisher_agent.returns_disclosure.records import DisclosureAssessment, SourceEvidence
-from fisher_agent.returns_disclosure.point14_returns_strategy import validate_call, validate_assessment
+from fisher_agent.point14.records import DisclosureAssessment, SourceEvidence
+from fisher_agent.point14.point14_returns_strategy import validate_call, validate_assessment
 
 TEXT = '''# Example: earnings call, third quarter 2025
 
@@ -128,7 +128,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
             'earnings_call_2025q3.md: Example (Date: 2025-10-29)'),Tool('read_document',TEXT)]
 
     async def test_anomaly_ack_negative_and_uncertain_use_one_relevant_full_call(self):
-        from fisher_agent.returns_disclosure.point14_returns_strategy import Point14ReturnsStrategy
+        from fisher_agent.point14.point14_returns_strategy import Point14ReturnsStrategy
         for classification,verdict,status in (('ACKNOWLEDGED','PASS','complete'),
             ('NOT_ACKNOWLEDGED','FAIL','complete'),('UNCERTAIN',None,'insufficient_evidence')):
             with self.subTest(classification=classification):
@@ -144,7 +144,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(run.usage['total_tokens'],15)
 
     async def test_no_anomaly_is_scoped_pass_without_documents_or_model(self):
-        from fisher_agent.returns_disclosure.point14_returns_strategy import Point14ReturnsStrategy
+        from fisher_agent.point14.point14_returns_strategy import Point14ReturnsStrategy
         from test_returns_evidence import baseline_rows,raw_rows
         sql=Tool('sql_query',raw_rows(baseline_rows()))
         listing=Tool('list_documents',AssertionError('must not list'))
@@ -158,7 +158,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(run.comparisons),4)
 
     async def test_invalid_quote_repairs_once_without_retrieving_again(self):
-        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from fisher_agent.point14 import Point14ReturnsStrategy
         model=Model([proposal(quotation='invented'),proposal()]);tools=self.tools()
         run=await Point14ReturnsStrategy(model).assess('example',tools)
         self.assertEqual(run.point_result.verdict,'PASS')
@@ -170,7 +170,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(invalid.model_calls,2)
 
     async def test_verified_negative_survives_neighbor_retrieval_error(self):
-        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from fisher_agent.point14 import Point14ReturnsStrategy
         from test_returns_evidence import baseline_rows,raw_rows
         rows=baseline_rows();rows[4]=('2025Q3',3,3,3,1000,20);rows[5]=('2025Q4',3,3,3,1000,40)
         tools=self.tools();tools[0].answer=raw_rows(rows)
@@ -186,7 +186,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(any(d.stage=='2025Q4' for d in run.point_result.diagnostics))
 
     async def test_negative_with_uncertain_neighbor_retains_explicit_uncertainty(self):
-        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from fisher_agent.point14 import Point14ReturnsStrategy
         from test_returns_evidence import baseline_rows,raw_rows
         rows=baseline_rows();rows[4]=('2025Q3',3,3,3,1000,20);rows[5]=('2025Q4',3,3,3,1000,40)
         tools=self.tools();tools[0].answer=raw_rows(rows)
@@ -203,7 +203,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
                             for d in run.point_result.diagnostics))
 
     async def test_multiple_anomalies_all_acknowledged_or_one_clean_negative(self):
-        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from fisher_agent.point14 import Point14ReturnsStrategy
         from test_returns_evidence import baseline_rows,raw_rows
         for second_classification,expected in (('ACKNOWLEDGED','PASS'),('NOT_ACKNOWLEDGED','FAIL')):
             with self.subTest(classification=second_classification):
@@ -227,7 +227,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
                 self.assertFalse(run.point_result.diagnostics)
 
     async def test_sql_failure_missing_call_and_api_error_are_not_investment_fails(self):
-        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from fisher_agent.point14 import Point14ReturnsStrategy
         for stage in ('sql','listing','api'):
             tools=self.tools();model=Model([RuntimeError('provider failure')])
             if stage=='sql':tools[0].answer='SQL error: broken'
@@ -241,11 +241,11 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
                     self.assertTrue(any(d.code=='model_api_error' for d in run.point_result.diagnostics))
 
     async def test_company_deadline_and_cancellation_propagation(self):
-        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from fisher_agent.point14 import Point14ReturnsStrategy
         tools=self.tools()
         async def sleeping(args,config=None):await asyncio.sleep(10)
         tools[0].ainvoke=sleeping
-        module='fisher_agent.returns_disclosure.point14_returns_strategy'
+        module='fisher_agent.point14.point14_returns_strategy'
         with patch(module+'.COMPANY_DEADLINE_SECONDS',0.001):
             run=await Point14ReturnsStrategy().assess('example',tools)
         self.assertIsNone(run.point_result.verdict)
@@ -256,7 +256,7 @@ class ReturnsStrategyTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(asyncio.CancelledError):await task
 
     async def test_batch_bounds_workers_and_isolates_company_errors(self):
-        from fisher_agent.returns_disclosure import Point14ReturnsStrategy
+        from fisher_agent.point14 import Point14ReturnsStrategy
         from test_returns_evidence import raw_rows,baseline_rows
         state={'active':0,'peak':0}
         companies={}

@@ -8,8 +8,8 @@ import unittest
 from unittest.mock import patch
 
 from evaluation.compare_point5 import compare, evaluate_strategies, main
-from fisher_agent.historical_margin_strategy import HistoricalMarginStrategy
-from fisher_agent.industry_margin_strategy import IndustryMarginStrategy
+from fisher_agent.point5.historical_margin_strategy import HistoricalMarginStrategy
+from fisher_agent.point5.industry_margin_strategy import IndustryMarginStrategy
 from test_industry_margin_strategy import FakeSQL, annual
 
 
@@ -42,8 +42,8 @@ class Point5EvaluationTests(unittest.TestCase):
         runtime = Path(__file__).resolve().parents[1] / 'fisher_agent'
         margin_modules = {'margin_records.py', 'evidence_retriever.py', 'point_rules.py',
                           'historical_margin_strategy.py', 'industry_margin_strategy.py'}
-        self.assertTrue(all((runtime / name).is_file() for name in margin_modules))
-        for path in runtime.glob('*.py'):
+        self.assertTrue(all((runtime / 'point5' / name).is_file() for name in margin_modules))
+        for path in runtime.rglob('*.py'):
             forbidden = {'evaluation', 'sqlite3'}
             # Other specialists construct permitted models; Point 5 stays deterministic.
             if path.name in margin_modules:

@@ -2,7 +2,7 @@ import asyncio
 import threading
 import unittest
 
-from fisher_agent.margin_runner import MarginRunner
+from fisher_agent.point5.margin_runner import MarginRunner
 from test_industry_margin_strategy import FakeSQL, annual
 
 

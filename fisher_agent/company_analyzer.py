@@ -10,13 +10,14 @@ from observability import Tracing
 from observability.tracing import Observation
 
 from .contracts import Diagnostic, PointResult
-from .margin_records import MarginResult
-from .margin_runner import MarginRunner
-from .point_adapters import adapt_margin, adapt_sales
-from .returns_disclosure import Point14ReturnsStrategy
-from .returns_disclosure.records import ReturnsRun
-from .sales_records import SalesResult
-from .sales_specialist import SalesSpecialist
+from .point4.result_adapter import adapt_sales
+from .point4.sales_records import SalesResult
+from .point4.sales_specialist import SalesSpecialist
+from .point5.margin_records import MarginResult
+from .point5.margin_runner import MarginRunner
+from .point5.result_adapter import adapt_margin
+from .point14 import Point14ReturnsStrategy
+from .point14.records import ReturnsRun
 
 COMPANY_CONCURRENCY = 2
 COMPANY_DEADLINE_SECONDS = 125
