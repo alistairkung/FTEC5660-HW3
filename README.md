@@ -444,14 +444,25 @@ three-point evaluation. Generated JSON, CSV and trace artifacts stay local and i
 
 ### Results and limits
 
-The specialists' independent public baselines each achieved 20/20 grounded correct
-and 100% balanced accuracy: [Point 4](evaluation/point4-results.md),
-[Point 5 Industry](evaluation/point5_comparison.md), and
-[Point 14 returns disclosure](evaluation/returns-disclosure-results.md). Those runs
-precede this final integration; a combined result must be measured through the actual
-homework entry point before claiming a final score. The historical Point 5 alternative
-scored 52.38% balanced accuracy and remains evaluation-only. Final combined metrics and
-any disagreements will be recorded after the orchestrator's controlled validation.
+Two actual lecturer-entry runs on 1 November 2026 each produced **60/60 grounded
+correct verdicts**: **100% accuracy, balanced accuracy, PASS recall (42/42) and FAIL
+recall (18/18)**. Each point scored 20/20, with PASS recall 14/14 and FAIL recall 6/6;
+there were no public disagreements, missing verdicts or operational fallback credits.
+The fresh GitHub checkout, installed only with `pip install -r requirements.txt` and
+run without Langfuse credentials or SDK, exited normally in **18.22 seconds**.
+The optional traced entry run took **15.98 seconds** and recorded 32 model calls,
+25,515 input / 4,895 output tokens, 60 SQL queries, 20 customer interviews and 24
+document-tool calls. Eight Point 14 no-anomaly paths used neither documents nor LLMs.
+
+[Final integration validation](evaluation/final-integration-results.md) records the
+examined commit, commands, independent scoring, clean-checkout checks and remotely
+retrieved trace. The offline suite has **115 passing tests and one optional paid
+smoke skipped**, reproduced with Python 3.13.9 and a clean Python 3.14.0 environment.
+The earlier [Point 4](evaluation/point4-results.md),
+[Point 5 comparison](evaluation/point5_comparison.md) and
+[Point 14 experiment](evaluation/returns-disclosure-results.md) remain historical
+baselines. Point 5's historical alternative scored 52.38% balanced accuracy and is
+not selected for runtime.
 
 Public evidence has informed development and is not held-out validation. The calls
 are templated; private-company accuracy and run-to-run variation remain unproven.
@@ -501,3 +512,40 @@ with available token usage. Diagnostic observations distinguish uncertainty,
 invalid output and API/retrieval failures. JSON trace IDs do not prove ingestion.
 
 Current measured status and rerun instructions: [Point 4 evaluation](evaluation/point4-results.md).
+
+
+## Task 2: Reflection — AI sycophancy and AI psychosis
+
+*AI-assisted reflection, permitted by the assignment; grounded in this project's
+recorded engineering experiments.*
+
+An agreeable model can validate the desired answer instead of testing it. In this
+project, accepting a sophisticated-looking transparency architecture or a public
+score at face value would have hidden unsupported contradictions, abstentions and
+operational FAIL fallbacks. The useful response was to inspect original evidence,
+separate execution from correctness, and allow an experiment to fail. More model
+reasoning did not automatically produce better reasoning.
+
+The assignment's phrase “AI psychosis” also raises the danger of a feedback loop:
+a user proposes an unsupported narrative, the model reinforces it confidently, and
+that agreement is then treated as new evidence. This is a reflection on how to use
+the technology, not a diagnosis of a person. Confidence and fluent language are not
+independent corroboration. Evidence should remain inspectable, uncertainty should
+remain visible, and consequential conclusions should be open to human challenge.
+
+The resulting engineering rule is to give models narrow semantic questions while
+keeping arithmetic, provenance checks and final aggregation in Python. Even a
+perfect public score is limited evidence: it neither proves general transparency
+nor guarantees performance on unseen companies. A useful assistant must be able to
+disagree, abstain and explain what would change its conclusion.
+
+## Submission
+
+The assignment PDF requires a **public GitHub repository named `FTEC5660-HW3`**.
+Enter `https://github.com/alistairkung/FTEC5660-HW3` in the course submission form
+before **16 November, 23:59 HKT**; the last commit before the deadline is graded.
+Submit the repository link, including `hw3.py`, `requirements.txt`, this README
+report/reflection and the supporting tracked modules. No separate archive is
+specified. Keep the repository public and API keys out of Git. The private grader
+uses its own key, runs three times and averages the balanced score; every run must
+produce `results.csv` within 30 minutes.
