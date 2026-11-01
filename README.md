@@ -226,4 +226,26 @@ flowchart TD
 ```
 
 ### Results
-> your point score on `public_test`, the companies where your verdicts disagree with the public answers, and why.
+
+I evaluated the agent on all 20 public companies using the lecturer’s runner:
+
+```bash
+python hw3.py --data-folder public_test
+```
+
+The agent produced **60/60 correct verdicts**, achieving **100% accuracy and balanced accuracy**.
+
+| Fisher point | Correct verdicts | PASS recall | FAIL recall | Balanced accuracy |
+| --- | ---: | ---: | ---: | ---: |
+| 4 — Sales organisation | 20/20 | 14/14 | 6/6 | 100% |
+| 5 — Worthwhile profit margins | 20/20 | 14/14 | 6/6 | 100% |
+| 14 — Management transparency | 20/20 | 14/14 | 6/6 | 100% |
+| **Overall** | **60/60** | **42/42** | **18/18** | **100%** |
+
+There were **no disagreements with the public answers**, missing verdicts or operational failures. No correct answers depended on fallback FAIL responses. Two end-to-end runs produced identical verdicts, including a fresh-checkout run that completed in **18.22 seconds** using only the required dependencies and DeepSeek API key.
+
+The traced run required **32 model calls**: 20 for sales-interview interpretation and 12 for returns-disclosure assessment. Point 5 required no model calls. Eight companies had no return-rate anomalies, so their Point 14 assessments required neither document retrieval nor model inference. Total recorded usage was **30,410 tokens**.
+
+For Point 5, the industry strategy achieved **100% balanced accuracy**, compared with **52.38%** for the historical strategy. On this dataset, improving margins could still be below industry standards, while declining margins could remain worthwhile.
+
+These results demonstrate agreement with the public dataset, but do not guarantee private-set performance. In particular, the Point 14 rule assesses disclosure of measured returns/quality setbacks rather than every aspect of management transparency.
