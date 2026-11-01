@@ -1,0 +1,45 @@
+{
+  "captured_from_commit": "692278abd02c5e58119a3a37564c8ef9a31e3b54",
+  "cases": {
+    "acknowledged": {
+      "points": {
+        "4": "PASS",
+        "5": "PASS",
+        "14": "PASS"
+      },
+      "summary": "Point 4 PASS: customer:sales_team: \"Their salespeople understand our process and solve technical problems.\" Interpretation: The interview describes the sales team’s ability to support customers. Point 5: FY2025 margin 20.0000% vs industry median 20%; PASS requires margin >= median. Sources: sample:sql:c6a921fd4282b0dc, sample:sql:93f20a891db502d4 All flagged return-rate setbacks were acknowledged in their same-quarter calls."
+    },
+    "no_anomaly": {
+      "points": {
+        "4": "PASS",
+        "5": "PASS",
+        "14": "PASS"
+      },
+      "summary": "Point 4 PASS: customer:sales_team: \"Their salespeople understand our process and solve technical problems.\" Interpretation: The interview describes the sales team’s ability to support customers. Point 5: FY2025 margin 20.0000% vs industry median 20%; PASS requires margin >= median. Sources: sample:sql:c6a921fd4282b0dc, sample:sql:93f20a891db502d4 No return-rate anomaly under the fixed 2x pooled-baseline rule; scoped PASS."
+    },
+    "not_acknowledged": {
+      "points": {
+        "4": "PASS",
+        "5": "PASS",
+        "14": "FAIL"
+      },
+      "summary": "Point 4 PASS: customer:sales_team: \"Their salespeople understand our process and solve technical problems.\" Interpretation: The interview describes the sales team’s ability to support customers. Point 5: FY2025 margin 20.0000% vs industry median 20%; PASS requires margin >= median. Sources: sample:sql:c6a921fd4282b0dc, sample:sql:93f20a891db502d4 Returns anomaly not acknowledged in the inspected same-quarter call: 2025Q3."
+    },
+    "operational_error": {
+      "points": {
+        "4": "FAIL",
+        "5": "PASS",
+        "14": "PASS"
+      },
+      "summary": "Point 4 operational FAIL fallback (error); no supported investment verdict. Point 4 unresolved (api_error); no supported investment verdict. Point 5: FY2025 margin 20.0000% vs industry median 20%; PASS requires margin >= median. Sources: sample:sql:c6a921fd4282b0dc, sample:sql:93f20a891db502d4 No return-rate anomaly under the fixed 2x pooled-baseline rule; scoped PASS."
+    },
+    "uncertain": {
+      "points": {
+        "4": "PASS",
+        "5": "PASS",
+        "14": "FAIL"
+      },
+      "summary": "Point 4 PASS: customer:sales_team: \"Their salespeople understand our process and solve technical problems.\" Interpretation: The interview describes the sales team’s ability to support customers. Point 5: FY2025 margin 20.0000% vs industry median 20%; PASS requires margin >= median. Sources: sample:sql:c6a921fd4282b0dc, sample:sql:93f20a891db502d4 Point 14 insufficient-evidence FAIL fallback (insufficient_evidence); no supported investment verdict. Returns disclosure remains uncertain; no supported investment verdict."
+    }
+  }
+}

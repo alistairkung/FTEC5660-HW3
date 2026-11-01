@@ -8,9 +8,9 @@ import os
 from pathlib import Path
 
 import hw3
-from fisher_agent.sales_records import SalesResult
-from fisher_agent.evidence_interpreter import PROMPT_VERSION
-from fisher_agent.runtime import build_sales_specialist
+from fisher_agent.point4.sales_records import SalesResult
+from fisher_agent.point4.evidence_interpreter import PROMPT_VERSION
+from fisher_agent.bootstrap import build_sales_specialist
 from observability import Tracing
 
 
@@ -60,7 +60,7 @@ async def evaluate(folder: Path, output: Path) -> dict:
     # Evidence is accessed ONLY through the unchanged supplied factory/tools.
     companies = {path.name: hw3.make_tools(path) for path in folders}
     with Tracing() as tracing:
-        specialist = build_sales_specialist(tracing)
+        specialist = build_sales_specialist(hw3.MODEL_NAME, tracing)
         results = await specialist.assess_companies(companies)
     # Read labels only after prediction. The specialist never receives this mapping.
     labels = hw3.read_ground_truth(folder)

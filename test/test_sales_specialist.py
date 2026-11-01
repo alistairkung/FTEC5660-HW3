@@ -9,8 +9,8 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.tools import tool
 from pydantic import Field
 
-from fisher_agent.evidence_interpreter import EvidenceInterpreter
-from fisher_agent.sales_specialist import SalesSpecialist
+from fisher_agent.point4.evidence_interpreter import EvidenceInterpreter
+from fisher_agent.point4.sales_specialist import SalesSpecialist
 
 
 GOOD = 'Their salespeople understand our process and solve technical problems.'
@@ -197,7 +197,7 @@ class SalesSpecialistTests(unittest.IsolatedAsyncioTestCase):
         interpreter = EvidenceInterpreter(ScriptedModel())
         interpreter._chain = RunnableLambda(blocked)
         tools, calls = interviews()
-        with patch('fisher_agent.sales_specialist.MODEL_TIMEOUT_SECONDS', 0.01):
+        with patch('fisher_agent.point4.sales_specialist.MODEL_TIMEOUT_SECONDS', 0.01):
             result = await SalesSpecialist(interpreter).assess('timeout', tools)
         self.assertEqual(result.status, 'api_error')
         self.assertEqual(result.model_calls, 1)
@@ -237,7 +237,7 @@ class SalesSpecialistTests(unittest.IsolatedAsyncioTestCase):
         interpreter = EvidenceInterpreter(ScriptedModel())
         interpreter._chain = RunnableLambda(blocked)
         tools, calls = interviews()
-        with patch('fisher_agent.sales_specialist.COMPANY_DEADLINE_SECONDS', 0.01):
+        with patch('fisher_agent.point4.sales_specialist.COMPANY_DEADLINE_SECONDS', 0.01):
             result = await SalesSpecialist(interpreter).assess('slow', tools)
         self.assertEqual(result.status, 'deadline')
         self.assertEqual(result.verdict, 'FAIL')

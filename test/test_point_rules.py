@@ -1,7 +1,7 @@
 from decimal import Decimal
 import unittest
 
-from fisher_agent.point_rules import historical_margin_passes, industry_margin_passes, operating_margin_pct
+from fisher_agent.point5.point_rules import historical_margin_passes, industry_margin_passes, operating_margin_pct
 
 
 class PointRulesTests(unittest.TestCase):

@@ -8,8 +8,8 @@ import unittest
 import zlib
 
 import hw3
-from fisher_agent.historical_margin_strategy import HistoricalMarginStrategy
-from fisher_agent.industry_margin_strategy import IndustryMarginStrategy
+from fisher_agent.point5.historical_margin_strategy import HistoricalMarginStrategy
+from fisher_agent.point5.industry_margin_strategy import IndustryMarginStrategy
 
 
 class Point5SQLToolTests(unittest.TestCase):

@@ -6,10 +6,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from fisher_agent.sales_records import SalesResult
+from fisher_agent.point4.sales_records import SalesResult
 from evaluation.point4 import evaluate, score_results
-from fisher_agent.evidence_interpreter import EvidenceInterpreter
-from fisher_agent.sales_specialist import SalesSpecialist
+from fisher_agent.point4.evidence_interpreter import EvidenceInterpreter
+from fisher_agent.point4.sales_specialist import SalesSpecialist
 from test_sales_specialist import ScriptedModel, decision, interviews
 
 

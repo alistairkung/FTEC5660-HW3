@@ -4,8 +4,8 @@ import os
 import unittest
 from unittest.mock import Mock, patch
 
-from fisher_agent.evidence_interpreter import EvidenceInterpreter
-from fisher_agent.sales_specialist import SalesSpecialist
+from fisher_agent.point4.evidence_interpreter import EvidenceInterpreter
+from fisher_agent.point4.sales_specialist import SalesSpecialist
 from observability import Tracing
 from test_langchain_tracing import RecordingCallback
 from test_sales_specialist import ScriptedModel, decision, interviews

@@ -7,14 +7,14 @@ import httpx
 from langchain_deepseek import ChatDeepSeek
 
 import hw3
-from fisher_agent.runtime import build_sales_specialist
+from fisher_agent.bootstrap import build_sales_specialist
 from test_sales_specialist import ScriptedModel, interviews
 
 
 class SalesRuntimeTests(unittest.TestCase):
     def test_only_permitted_model_is_constructed_with_sdk_retries_disabled(self):
-        with patch('fisher_agent.runtime.ChatDeepSeek', return_value=ScriptedModel()) as model:
-            build_sales_specialist()
+        with patch('langchain_deepseek.ChatDeepSeek', return_value=ScriptedModel()) as model:
+            build_sales_specialist(hw3.MODEL_NAME)
         config = model.call_args.kwargs
         self.assertEqual(config['model'], hw3.MODEL_NAME)
         self.assertEqual(config['model'], 'deepseek-v4-flash')
@@ -56,8 +56,8 @@ class SalesRequestTests(unittest.IsolatedAsyncioTestCase):
             def construct(**kwargs):
                 return ChatDeepSeek(**kwargs, api_key='synthetic-test-key', http_async_client=client)
 
-            with patch('fisher_agent.runtime.ChatDeepSeek', side_effect=construct):
-                specialist = build_sales_specialist()
+            with patch('langchain_deepseek.ChatDeepSeek', side_effect=construct):
+                specialist = build_sales_specialist(hw3.MODEL_NAME)
             tools, calls = interviews(customer=quote)
             result = await specialist.assess('synthetic', tools)
         self.assertEqual(result.status, 'assessed')

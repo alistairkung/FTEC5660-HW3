@@ -87,7 +87,7 @@ async def evaluate(folder: Path, output: Path, company_ids: list[str] | None = N
     sales = [r.sales for r in results.values() if r.sales is not None]
     usage = {key: sum(r.usage.get(key, 0) for r in sales)
              for key in ('input_tokens', 'output_tokens', 'total_tokens')}
-    source_paths = [Path('hw3.py'), *sorted(Path('fisher_agent').glob('*.py'))]
+    source_paths = [Path('hw3.py'), *sorted(Path('fisher_agent').rglob('*.py'))]
     report = dict(run_at=run_at, commit=subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], text=True).strip(),
         source_sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in source_paths},

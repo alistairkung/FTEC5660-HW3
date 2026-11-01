@@ -3,7 +3,7 @@ from dataclasses import replace
 import sqlite3
 import unittest
 
-from fisher_agent.returns_disclosure.returns_evidence import RETURNS_QUERY, decode_quarters, compare_quarters
+from fisher_agent.point14.returns_evidence import RETURNS_QUERY, decode_quarters, compare_quarters
 
 
 def raw_rows(rows):

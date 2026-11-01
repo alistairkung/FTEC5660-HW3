@@ -305,7 +305,7 @@ This integration follows the [Langfuse AI skill](https://github.com/langfuse/ski
 ## Point 5 strategy experiment (development only)
 
 Two interchangeable `MarginStrategy` implementations expose
-`evaluate(company_id, sql_query) -> MarginResult` in `fisher_agent/`:
+`evaluate(company_id, sql_query) -> MarginResult` in `fisher_agent/point5/`:
 
 - `IndustryMarginStrategy`: FY2025 operating margin >= the company's own industry median.
 - `HistoricalMarginStrategy`: FY2023–2025 operating margins all > 0, and FY2025 >= FY2023.
@@ -370,6 +370,25 @@ findings require inspection of the complete call. The exact integer rule, zero-b
 exception and source checks are documented in [Point 14's scoped design](docs/point14-returns-disclosure.md).
 
 ### Design
+
+Application construction lives in `fisher_agent/bootstrap.py`; `hw3.build_agent()`
+passes the lecturer's `MODEL_NAME` to this composition root. Importing the modules
+creates no models, tool calls or tracing clients. Standalone evaluation factories
+also live in bootstrap and accept the model name explicitly.
+
+```text
+fisher_agent/
+├── bootstrap.py          # construct models, specialists and selected strategy
+├── company_analyzer.py   # company orchestration and public-output assembly
+├── contracts.py          # shared PointResult, provenance and diagnostics
+├── point4/               # sales interpretation, validation, records and adapter
+├── point5/               # SQL evidence, Decimal strategies, runner and adapter
+└── point14/              # scoped returns evidence, disclosure and records
+```
+
+Specialist logic was relocated with import updates; prompts, rules, model settings,
+execution budgets, trace metadata and public payloads are unchanged. The historical
+validation reports below refer to their recorded pre-refactor commits and paths.
 
 ```mermaid
 flowchart TD
@@ -476,7 +495,7 @@ for provider-reported usage. No fallback credit establishes semantic correctness
 
 ## Point 4 development slice
 
-The independently testable sales specialist is implemented in `fisher_agent/`.
+The independently testable sales specialist is implemented in `fisher_agent/point4/`.
 It uses the customer `sales_team` interview first, consults the competitor only
 after a valid UNCERTAIN assessment, then makes one final adjudication if needed.
 Quotes and source IDs are checked in Python. The model judges their meaning.
