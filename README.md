@@ -176,8 +176,54 @@ names and wording, and scores your 3 points only.
 ### My 3 points and rules
 > for each point: why you chose it, your PASS rule in one or two sentences, and the evidence it uses. Quote Fisher where it helps.
 
+| Point | Fisher criterion | Supplied evidence | PASS rule |
+| --- | --- | --- | --- |
+| **4** | Above-average sales organisation | Customer `sales_team` interview; competitor interview only after validated uncertainty | Concrete evidence of knowledgeable sales support, consultative problem solving, customer value or favourable sales effectiveness. |
+| **5** | Worthwhile profit margins | SQL: FY2025 revenue, operating costs and the company's own industry median | `IndustryMarginStrategy`: FY2025 operating margin is at least the matching industry median; arithmetic uses Python `Decimal`. |
+| **14** | Management discusses troubles openly | SQL: monthly shipments/returns; complete same-quarter earnings calls for detected anomalies | PASS if no quarterly return-rate anomalies occur, or every anomaly is acknowledged. An anomaly is a rate at least twice the pooled preceding-four-quarter rate; zero current and baseline returns means no anomaly. |
+
 ### Design
 > a visualization of your agent design and one paragraph describing it.
+
+```mermaid
+flowchart TD
+    B["hw3.build_agent → bootstrap"] --> C["CompanyAnalyzer: at most two companies"]
+    T["Company-scoped supplied tools"] --> C
+
+    subgraph P4["Point 4 — Sales organisation"]
+        I4["Interview customer: sales_team"] --> L4["LLM: structured sales assessment"]
+        L4 --> V4["Python: validate source and exact quotation"]
+        V4 --> U4{"Validated UNCERTAIN?"}
+        U4 -->|yes| F4["Interview competitor; reassess and validate; bounded adjudication if needed"]
+    end
+
+    subgraph P5["Point 5 — Profit margins"]
+        S5["SQL: aggregate FY2025 financials and matching industry median"]
+        S5 --> D5["Python Decimal: operating margin ≥ industry median"]
+    end
+
+    subgraph P14["Point 14 — Returns disclosure"]
+        S14["SQL: quarterly returns and shipments"] --> D14["Python: compare rate with 2× pooled prior-four-quarter baseline"]
+        D14 --> A14{"Any anomalies?"}
+        A14 -->|no| N14["Scoped PASS: no documents or LLM calls"]
+        A14 -->|yes| R14["Read complete earnings call for each anomalous quarter"]
+        R14 --> L14["LLM: is the measured setback acknowledged?"]
+        L14 --> V14["Python: validate document, period, management speaker and quotation"]
+        V14 --> G14["Python: all acknowledged → PASS; any unacknowledged → FAIL; uncertainty stays explicit"]
+    end
+
+    C --> I4
+    C --> S5
+    C --> S14
+    U4 -->|no| O["Shared PointResult: verdict, status, provenance and diagnostics"]
+    F4 --> O
+    D5 --> O
+    N14 --> O
+    G14 --> O
+    O --> P["CompanyAnalyzer: assemble verdicts and summary; label unresolved FAIL fallbacks"]
+    P --> CSV["Unchanged lecturer runner → results.csv"]
+    C -.-> LF["Optional Langfuse: tools, models, decisions and usage"]
+```
 
 ### Results
 > your point score on `public_test`, the companies where your verdicts disagree with the public answers, and why.
