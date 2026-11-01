@@ -9,19 +9,20 @@ import unittest
 from unittest.mock import patch
 
 import hw3
+from fisher_agent.returns_disclosure import Point14ReturnsStrategy
 from test_company_analyzer import company_tools
 from test_sales_specialist import ScriptedModel, decision
 
 
 class HomeworkIntegrationTests(unittest.IsolatedAsyncioTestCase):
-    async def test_runner_writes_two_grounded_points_and_honest_missing_point14(self):
+    async def test_runner_writes_exactly_three_grounded_points(self):
         model = ScriptedModel(responses=[decision()])
         tools = company_tools()
 
         def labels_after_prediction(_):
             self.assertEqual(len(model.seen), 1)
-            self.assertEqual(len(tools[-1].queries), 2)
-            return {'sample': {'points': {'4': 'PASS', '5': 'PASS', '14': 'FAIL'}}}
+            self.assertEqual(len(tools[-1].queries), 3)
+            return {'sample': {'points': {'4': 'PASS', '5': 'PASS', '14': 'PASS'}}}
 
         with tempfile.TemporaryDirectory() as directory:
             previous = Path.cwd()
@@ -31,12 +32,15 @@ class HomeworkIntegrationTests(unittest.IsolatedAsyncioTestCase):
                         patch('hw3.make_tools', return_value=tools), \
                         patch('hw3.read_ground_truth', side_effect=labels_after_prediction), \
                         patch('fisher_agent.runtime.ChatDeepSeek', return_value=model), \
+                        patch('fisher_agent.returns_disclosure.build_returns_strategy',
+                              return_value=Point14ReturnsStrategy()) as returns_factory, \
                         redirect_stdout(io.StringIO()):
                     self.assertEqual(await hw3.run(Path(directory)), 0)
+                    returns_factory.assert_called_once_with(None)
                 with Path('results.csv').open() as handle:
                     row = next(csv.DictReader(handle))
             finally:
                 os.chdir(previous)
-        self.assertEqual(row['points'], '4:PASS 5:PASS 14:missing')
-        self.assertEqual(row['points_correct'], '2/3')
-        self.assertIn('Point 14 pending', row['summary'])
+        self.assertEqual(row['points'], '4:PASS 5:PASS 14:PASS')
+        self.assertEqual(row['points_correct'], '3/3')
+        self.assertNotIn('pending', row['summary'])

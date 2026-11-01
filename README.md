@@ -172,10 +172,10 @@ names and wording, and scores your 3 points only.
 
 ## Optional Langfuse tracing
 
-Tracing is independent of the analysis implementation. `hw3.py`, its tools,
-runner and grading functions are unchanged. The current starter makes no model
-calls: the wrapper below records the run; future student components must pass
-the reusable callback config to record their model/tool calls.
+Tracing is independent of the analysis implementation. The provided tools,
+runner and grading functions are unchanged. The launcher below records the
+integrated run; specialists pass the reusable callback config to their model
+and supplied-tool invocations.
 
 Normal homework execution needs only `DEEPSEEK_API_KEY`. Without Langfuse keys,
 or if its optional SDK cannot initialize, tracing becomes a no-op. SDK callback
@@ -209,7 +209,7 @@ after environment loading; imports alone do not initialize the SDK.
 
 ### Runtime and component integration
 
-Use this optional launcher once analysis has been implemented and points chosen:
+Run the integrated three-point analysis with optional tracing:
 
 ```bash
 python -m observability.run --data-folder public_test
@@ -222,11 +222,9 @@ not evidence of successful remote delivery. Wait for all company tasks and
 observations to finish before closing. Do not create/close a separate SDK client
 for each company: SDK resources are shared by project key.
 
-Future student integration can inject `current_tracing()` into its components.
-It returns the launcher's `Tracing` instance, or `None` under the original
-`python hw3.py` launcher. The architecture task can wire this without changing
-the observability module. For example, inside a component with an injected
-`tracing` value and an existing LangChain model/chain:
+`build_agent()` injects `current_tracing()` into all three specialists. It returns
+the launcher's lifecycle, or `None` under `python hw3.py`. Components pass the
+company/point callback config to their LangChain model or supplied tool:
 
 ```python
 config = tracing.config(
@@ -341,7 +339,7 @@ reported separately. Labels never reach runtime strategies or trace payloads.
 
 See [comparison findings](evaluation/point5_comparison.md) and
 [full evidence/results](evaluation/point5_results.json). Industry achieves 100%
-balanced accuracy; Historical achieves 52.38%. The integration milestone below
+balanced accuracy; Historical achieves 52.38%. The final integration below
 selects Industry for the runtime path and retains both strategies for comparison.
 
 Optional tracing uses the existing lifecycle and closes/flushes on completion:
@@ -357,154 +355,113 @@ does not initialize Langfuse or load `.env`. No DeepSeek call or API key is need
 for this experiment. Trace payloads are tested offline; live delivery is unverified.
 
 ## Homework 3 solution:
-> to students: this is your report, see the homework description.
 
 ### My 3 points and rules
-> for each point: why you chose it, your PASS rule in one or two sentences, and the evidence it uses. Quote Fisher where it helps.
+
+| Point | Why selected and evidence | PASS rule |
+| --- | --- | --- |
+| 4 — Sales organisation | Fisher's customer/competitor scuttlebutt directly tests sales competence. Use the supplied customer `sales_team` interview, consulting the competitor only after genuine uncertainty. | Concrete interview evidence shows knowledgeable support, consultative problem solving, customer value or favourable sales effectiveness. Product quality or reputation alone does not establish sales competence. |
+| 5 — Profit margins | Industry-relative profitability gives a deterministic financial comparison using supplied SQL evidence. IndustryMarginStrategy was selected over the preserved historical alternative. | FY2025 operating margin, including production, selling/admin and R&D costs, is at least the company's own industry median. |
+| 14 — Returns disclosure | A fixed returns anomaly provides an objective setback against which to inspect management's same-quarter earnings-call disclosure. Use supplied SQL, document listing and complete relevant calls. | No reporting-quarter return rate reaches twice the pooled preceding-four-quarter rate, or management acknowledges every flagged setback. A validated unacknowledged setback produces FAIL; unresolved evidence stays distinct internally. |
+
+Point 14 deliberately covers returns/quality setbacks, not every form of management
+transparency. It validates exact management quotations for acknowledgements; negative
+findings require inspection of the complete call. The exact integer rule, zero-baseline
+exception and source checks are documented in [Point 14's scoped design](docs/point14-returns-disclosure.md).
 
 ### Design
 
-The current milestone integrates Points 4 and 5. Point 14 remains under development
-on its specialist branch and is not executed by the common runner.
-
 ```mermaid
 flowchart TD
-    H["hw3.py: student wiring"] --> C["CompanyAnalyzer: at most 2 companies"]
-    C --> S["SalesSpecialist: customer first, bounded LLM workflow"]
-    C --> M["MarginRunner: at most 2 SQL workers, 10-second deadline"]
-    M --> I["IndustryMarginStrategy: deterministic Decimal calculation"]
-    S --> A["Explicit PointResult adapters"]
-    I --> A
-    A --> O["Evidence-backed summary and lecturer CSV"]
-    C -.-> P["Point 14 pending: missing in CSV"]
+    H["hw3.py: choose 4, 5, 14 and construct dependencies once"] --> C["CompanyAnalyzer: at most two companies"]
+    C --> S["Point 4: customer interview and structured classification"]
+    S --> U{"UNCERTAIN?"}
+    U -->|yes| R["Competitor interview; bounded reassessment/adjudication"]
+    C --> M["Point 5: bounded SQL worker; FY2025 margin vs own industry median"]
+    C --> Q["Point 14: SQL return rates vs pooled four-quarter baseline"]
+    Q --> A{"At least 2x baseline?"}
+    A -->|no| P["Scoped PASS; no documents or model calls"]
+    A -->|yes| D["Read complete same-quarter call; structured disclosure assessment"]
+    D --> V["Validate management speaker and quotation; one format repair maximum"]
+    U -->|no| O["Shared PointResult with provenance and diagnostics"]
+    R --> O
+    M --> O
+    P --> O
+    V --> O
+    O --> F["Deterministic summary; explicit unresolved FAIL fallback at public boundary"]
+    F --> CSV["Unchanged lecturer runner: exactly three verdicts and results.csv"]
+    C -.-> LF["Optional nested Langfuse observations, usage and errors"]
 ```
 
-`contracts.py` owns only the shared result, provenance references and diagnostics.
-Interview assessments stay in `sales_records.py`; SQL evidence and margin records
-stay in `margin_records.py`. Original specialist records are retained for diagnostics.
-Completed results require a verdict and company-scoped provenance. Operational
-errors retain `verdict=None` internally; the public adapter emits an explicitly
-labelled FAIL fallback only for an unresolved implemented point.
+The three specialists run independently within each company using the same supplied
+tool instances. Python owns routing, arithmetic, validation, aggregation and the
+summary; LangChain with `deepseek-v4-flash`, thinking disabled, handles only semantic
+interpretation. Point 4 and Point 5 adapt their owned records to the shared
+`PointResult`; Point 14 already returns it. `CompanyAssessment` retains the original
+sales, margin and `ReturnsRun` records, including provenance, findings, diagnostics,
+model/tool counts and token usage. Company observations expose statuses and counts
+without repeating every child tool payload. Labels are used only after predictions
+by development evaluation and the lecturer scorer.
 
-Each company has its own supplied tools and a 95-second deadline within a shared
-20-minute analysis budget. Queued companies receive explicit error entries if the
-batch budget expires; completed independent point results are preserved. Point 4 retains
-its existing 90-second deadline, 20-second model timeout, zero SDK retries and
-explicit non-thinking `deepseek-v4-flash` configuration. Point 5 runs independently
-of the event loop with a 10-second deadline including queue time. Python cannot
-kill a blocked thread: timed-out SQL workers retain their slots until they return,
-cannot start another query after cancellation, and cannot delay interpreter exit.
-A company failure preserves the other specialist's completed result.
-An indefinitely blocked SQL call may outlive its company trace; thread cancellation
-does not guarantee that its native tool observation closes before tracing shuts down.
+Each company has a 125-second deadline and at most two companies run concurrently,
+within a 1,200-second batch budget. Point 4 retains its 90-second company deadline,
+Point 14 its 120-second deadline, and both use 20-second model attempts with zero SDK
+retries. Point 14 permits at most eight attempts across four events, including one
+format/provenance repair per event. Point 5's SQL deadline is 10 seconds including
+queue time, with at most two physical daemon workers. Completed independent verdicts
+survive a neighbouring failure or timeout; queued companies receive error entries
+when the batch budget expires. Cancellation propagates.
 
-The lecturer requires exactly three chosen points. `CHOSEN_POINTS=[4,5,14]` records
-the intended final selection, but Point 14 stays missing with an explicit pending
-summary. **This is an integration milestone, not a submission-ready solution.**
-The unchanged normalizer writes `14:missing`; no placeholder verdict is fabricated.
+Internal errors and insufficient evidence carry `verdict=None`. The homework has no
+public UNKNOWN, so the final adapter emits all of Points 4, 5 and 14, using an explicit
+FAIL-fallback summary for an unresolved point. This fallback is never counted as a
+grounded verdict in development review. No additional summarisation model is used.
 
-Run after installing `requirements.txt` and configuring `.env`:
+### Run and test
+
+Install `requirements.txt`, set `DEEPSEEK_API_KEY` in the ignored `.env`, then run:
 
 ```bash
 python hw3.py --data-folder public_test
 python -m unittest discover -s test -v
 ```
 
-For optional common company-level traces, install `requirements-observability.txt`
-and run `python -m observability.run --data-folder public_test`. Both specialist
-paths nest under `assess-company`; callbacks capture SQL, interviews, model usage
-and errors. Credentials are optional and tracing never determines verdicts.
-
-The development comparison below uses the same company orchestration, adapters
-and unchanged lecturer normalization/CSV functions. It reads labels after prediction,
-reports grounded accuracy separately from operational fallback credits, requires
-explicit paid-call opt-in and refuses to overwrite its JSON baseline:
+For optional company/point traces, install `requirements-observability.txt` and run:
 
 ```bash
-python -m evaluation.combined --live --data-folder public_test --output .review/combined-full.json
+python -m observability.run --data-folder public_test
 ```
 
-Use repeatable `--company` arguments for a small gate. Generated JSON/CSV files
-are local artifacts. See [combined validation](evaluation/combined-results.md).
+Tracing credentials remain optional. The launcher owns one lifecycle; the supplied
+tool callbacks, generations, specialist decisions and final company output nest under
+`assess-company`. A trace ID alone does not establish remote ingestion.
 
-The following original diagram remains the **future three-point design reference**;
-its Point 14 path is not implemented in this milestone. Point 5's Historical path
-is experimental only; Industry is selected in the runtime.
+The deterministic strategy comparison remains reproducible with
+`python -m evaluation.compare_point5 --output .review/point5-comparison-new.json`.
+`evaluation/combined.py` and [its report](evaluation/combined-results.md) are historical
+two-point milestone records: their scores and sales-only usage are not the final
+three-point evaluation. Generated JSON, CSV and trace artifacts stay local and ignored.
 
-```mermaid
-flowchart TD
-    START["HW3 Runner"] --> SETUP["build_agent(): DeepSeek v4 Flash + optional Langfuse"]
-    SETUP --> COMP["Company orchestrator: four company-scoped tools"]
+### Results and limits
 
-    COMP --> I1
-    COMP --> SQL5
-    COMP --> SQL14
-    COMP --> DOC
+The specialists' independent public baselines each achieved 20/20 grounded correct
+and 100% balanced accuracy: [Point 4](evaluation/point4-results.md),
+[Point 5 Industry](evaluation/point5_comparison.md), and
+[Point 14 returns disclosure](evaluation/returns-disclosure-results.md). Those runs
+precede this final integration; a combined result must be measured through the actual
+homework entry point before claiming a final score. The historical Point 5 alternative
+scored 52.38% balanced accuracy and remains evaluation-only. Final combined metrics and
+any disagreements will be recorded after the orchestrator's controlled validation.
 
-    subgraph P4["Point 4 — Sales Organisation"]
-        direction TB
-        I1["Interview customer: sales_team"] --> C1["LLM classifier"]
-        C1 --> U1{"UNCERTAIN?"}
-        U1 -->|No| R4["PASS / FAIL"]
-        U1 -->|Yes| I2["Interview competitor: sales_team"]
-        I2 --> C2["LLM reassessment"]
-        C2 --> U2{"Still uncertain?"}
-        U2 -->|No| R4
-        U2 -->|Yes| ADJ4["Bounded final adjudication"]
-        ADJ4 --> R4
-    end
-
-    subgraph P5["Point 5 — Profit Margins"]
-        direction TB
-        SQL5["SQL financial data"] --> STRAT{"Selected strategy"}
-        STRAT -->|A| INDUSTRY["FY2025 margin vs industry median"]
-        STRAT -->|B| HISTORY["2023–2025 historical margins"]
-        INDUSTRY --> R5["Deterministic PASS / FAIL"]
-        HISTORY --> R5
-    end
-
-    subgraph P14["Point 14 — Management Transparency"]
-        direction TB
-        SQL14["SQL financial extraction"] --> FIN["Financial snapshot"]
-        DOC["Read earnings calls"] --> EX["LLM claim extraction"]
-        EX --> VALID["Validate source quotations"]
-        FIN --> VERIFY["LLM transparency verifier"]
-        VALID --> VERIFY
-        VERIFY --> STATUS{"Transparency assessment"}
-        STATUS -->|TRANSPARENT| PASS14["PASS"]
-        STATUS -->|EVASIVE| FAIL14["FAIL"]
-        STATUS -->|UNCERTAIN| ADJ14["Bounded adjudication"]
-        ADJ14 --> R14["PASS / FAIL"]
-    end
-
-    R4 --> AGG["Deterministic validation + aggregation"]
-    R5 --> AGG
-    PASS14 --> AGG
-    FAIL14 --> AGG
-    R14 --> AGG
-
-    AGG --> SUMMARY["Company summary (cannot override verdicts)"]
-    SUMMARY --> CSV["results.csv"]
-    CSV --> EVAL["Public ground truth: balanced accuracy"]
-
-    COMP -.-> LF["Optional Langfuse traces / usage / latency"]
-    C1 -.-> LF
-    R5 -.-> LF
-    VERIFY -.-> LF
-
-    classDef llm fill:#dbeafe,stroke:#2563eb,color:#1e40af
-    classDef deterministic fill:#dcfce7,stroke:#16a34a,color:#166534
-    classDef monitoring fill:#f3e8ff,stroke:#9333ea,color:#6b21a8
-
-    class C1,C2,ADJ4,EX,VERIFY,ADJ14,SUMMARY llm
-    class FIN,VALID,INDUSTRY,HISTORY,R5,AGG deterministic
-    class LF,EVAL monitoring
-```
-
-**Legend:** Blue marks LLM reasoning, green marks deterministic computation or validation, and purple marks observability or evaluation. The three specialists produce independent verdicts; a deterministic aggregator validates and combines them. Langfuse is optional and does not determine correctness, which is assessed separately against the public ground truth.
-
-### Results
-> your point score on `public_test`, the companies where your verdicts disagree with the public answers, and why.
+Public evidence has informed development and is not held-out validation. The calls
+are templated; private-company accuracy and run-to-run variation remain unproven.
+Point 14 ignores non-returns troubles, and its rolling baseline may be affected by
+persistent anomalies or seasonality. Exact quotations establish source grounding,
+not correct interpretation. Python cannot kill a blocked synchronous SQL thread;
+a timed-out worker retains its slot until return and may outlive its trace. If an
+outer deadline cancels a model-bearing specialist before it returns, company-level
+usage is partial (`usage_complete=false`); child generations remain the audit source
+for provider-reported usage. No fallback credit establishes semantic correctness.
 
 ## Point 4 development slice
 
@@ -513,9 +470,9 @@ It uses the customer `sales_team` interview first, consults the competitor only
 after a valid UNCERTAIN assessment, then makes one final adjudication if needed.
 Quotes and source IDs are checked in Python. The model judges their meaning.
 
-The standalone slice remains independently evaluable; the integration milestone
-above also wires it into the homework entry point alongside Point 5. Point 14
-remains pending. See [Point 4 design and limits](docs/point4.md).
+The standalone slice remains independently evaluable; the final integration
+also wires it into the homework entry point alongside Points 5 and 14.
+See [Point 4 design and limits](docs/point4.md).
 
 Run offline checks without credentials or services:
 
