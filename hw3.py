@@ -57,7 +57,7 @@ def load_env_file(path: Path = Path(".env")) -> None:
 
 # Choose any 3 of the 15 points, e.g. CHOSEN_POINTS = [1, 7, 15]. Your agent
 # gives a PASS or FAIL verdict on these 3 points only, with your own rule for each.
-CHOSEN_POINTS: list[int] = [4, 5, 14]  # Point 14 pending: two-specialist integration milestone.
+CHOSEN_POINTS: list[int] = [4, 5, 14]
 
 
 def build_agent() -> Any:
@@ -73,10 +73,12 @@ def build_agent() -> Any:
     """
     from fisher_agent.company_analyzer import CompanyAnalyzer
     from fisher_agent.runtime import build_sales_specialist
+    from fisher_agent.returns_disclosure import build_returns_strategy
     from observability import current_tracing
 
     tracing = current_tracing()
-    return CompanyAnalyzer(build_sales_specialist(tracing), tracing=tracing)
+    return CompanyAnalyzer(build_sales_specialist(tracing),
+                           returns_strategy=build_returns_strategy(tracing), tracing=tracing)
 
 
 async def analyze_companies(agent: Any, companies: dict[str, list[Any]]) -> dict[str, dict[str, Any]]:

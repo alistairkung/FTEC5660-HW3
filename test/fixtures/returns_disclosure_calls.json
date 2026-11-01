@@ -1,0 +1,24 @@
+[
+  {
+    "company_id": "cobalt_holdings",
+    "period": "2025Q3",
+    "document": "earnings_call_2025q3.md",
+    "date": "2025-10-29",
+    "source_tool": "read_document",
+    "arguments": {
+      "name": "earnings_call_2025q3.md"
+    },
+    "raw": "# Cobalt Holdings: earnings call, third quarter 2025\n\nDate: 2025-10-29\n\nIrene Ruiz (Chief Executive): Revenue for the quarter was USD 215.6 million. Order books are in line with our plan.\n\nOlivia Brennan (Chief Financial Officer): We kept a close eye on costs across our plants. Returns rose sharply this quarter because of a faulty batch of labelling line parts. We are replacing every affected unit at our own cost.\n\nAnalyst: Will you keep investing in new products?\n\nIrene Ruiz: Research is the engine of this company and we fund it accordingly.\n"
+  },
+  {
+    "company_id": "kestrel_technologies",
+    "period": "2026Q1",
+    "document": "earnings_call_2026q1.md",
+    "date": "2026-04-28",
+    "source_tool": "read_document",
+    "arguments": {
+      "name": "earnings_call_2026q1.md"
+    },
+    "raw": "# Kestrel Technologies: earnings call, first quarter 2026\n\nDate: 2026-04-28\n\nTessa Hartmann (Chief Executive): Revenue for the quarter was USD 142.7 million. Order books are in line with our plan.\n\nLeon Hartmann (Chief Financial Officer): We kept a close eye on costs across our plants. Returns stayed low and product quality was steady.\n\nAnalyst: Will you keep investing in new products?\n\nTessa Hartmann: We invest for the long term and our research budget reflects that.\n"
+  }
+]
