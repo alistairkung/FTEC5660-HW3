@@ -230,7 +230,11 @@ flowchart TD
 
 ### Design reflection — simplifying Point 14
 
-Point 14 was the hardest part to scope. My initial attempt tried to evaluate management transparency broadly by extracting claims, comparing them with financial performance and adjudicating whether management was candid. That design became increasingly elaborate, yet the evaluation remained unreliable: semantically unrelated facts were sometimes treated as contradictions, relevant metrics were missing, and repeated model-based repair did not resolve the underlying judgement problem. I used Langfuse traces to inspect where the pipeline failed rather than adding more reasoning stages or token budget. The eventual solution narrowed the claim to something the supplied evidence could support: whether management acknowledged objectively measured returns/quality setbacks in the relevant quarter's earnings call. A deterministic return-rate check now decides whether an LLM assessment is needed at all. This is a deliberately scoped interpretation of Fisher's Point 14, not a general-purpose test of management honesty; the simplification made the reasoning easier to audit and test.
+Point 14 was the hardest part to scope. My initial approach extracted management claims, compared them with financial evidence and used an LLM to assess transparency. Despite increasingly sophisticated validation, evaluations exposed semantic errors: unrelated facts were treated as contradictions, relevant evidence was missing, and model-based repairs often failed to produce defensible conclusions.
+
+Langfuse became central to my development process. Its captured model inputs, outputs, tool responses and intermediate decisions let me investigate failures, replay responses in deterministic tests and evaluate alternative hypotheses without additional paid inference. That led me to question the architecture itself. An offline analysis of previously collected evidence identified a simpler signal: whether management acknowledged objectively measured returns/quality setbacks. The resulting design uses deterministic anomaly detection to decide when a narrowly scoped LLM assessment is needed.
+
+This reinforced a principle from my earlier assignments and Private Client Graph project: every LLM component should earn its place. The largest improvement came not from adding reasoning stages, but from removing unnecessary ones. Point 14 remains a scoped proxy for Fisher's broader concern with management candour, rather than a general test of honesty.
 
 ### Results
 
