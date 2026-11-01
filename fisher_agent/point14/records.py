@@ -128,6 +128,7 @@ class ClaimEvidenceMatch:
     compatibility: Literal['COMPATIBLE', 'INCOMPATIBLE', 'UNKNOWN']
     relation: Literal['SUPPORTED', 'CONTRADICTED', 'INCONCLUSIVE', 'UNMATCHED']
     reason: str
+    unverified_qualifiers: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -159,6 +160,8 @@ class DisclosureFinding:
     knowledge: Literal['ESTABLISHED', 'UNKNOWN']
     materiality_claim_ids: tuple[str, ...] = ()
     knowledge_claim_ids: tuple[str, ...] = ()
+    rejected_claim_ids: tuple[str, ...] = ()
+    diagnostics: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

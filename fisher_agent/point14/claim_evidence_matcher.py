@@ -39,7 +39,8 @@ def match_claim(claim: ManagementClaim, fact: EvidenceFact | None) -> ClaimEvide
     """Unknown alignment cannot be upgraded to a factual contradiction."""
     def result(compatibility, relation, reason):
         return ClaimEvidenceMatch(claim.evidence_id, fact.evidence_id if fact else None,
-                                  compatibility, relation, reason)
+                                  compatibility, relation, reason,
+                                  claim.proposition.qualifiers if claim.proposition else ())
 
     proposition = claim.proposition
     if fact is None:

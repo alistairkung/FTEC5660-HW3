@@ -74,24 +74,63 @@ record per-call counts and cap hits. The verifier sees complete original transcr
 but can acknowledge only validated extracted quotations; relevant unextracted
 wording leaves disclosure inconclusive rather than supporting an omission claim.
 
-## Scope and unresolved policy
+## Scope and operational policy
 
-Event candidates are prepared from adverse fact changes before matching; they are
-not automatically material. Materiality needs a relevant source-backed qualitative
-basis rather than an arbitrary percentage cutoff. `NOT_FOUND` describes a search
-within the named supplied quarter call, not proof of concealment. Coverage is
-explicitly limited to the four supplied earnings calls and measured financial/returns
-facts; missing calls, unknown dates and undefined measurements remain gaps.
+Fisher's Point 14 concerns reporting troubles as freely as successes, including
+nonfraud reasons for withholding bad news (book, printed p. 77 / PDF p. 103).
+Proven dishonest intent is **not** a prerequisite. The following is our deliberately
+narrow evidence policy, not a universal requirement imposed by Fisher.
 
-This scope currently has no independent management-knowledge basis for an absent
-acknowledgement. Knowledge is established only by a dated same-event admission,
-which also prevents NOT_FOUND. Therefore omission-to-EVASIVE is a policy/evidence
-limitation, not a supported FAIL path. The decision records
-`omission_knowledge_policy_unresolved`; it does not assume that database availability
-proves management knowledge. An aligned numerical misstatement remains independent
-of candid disclosure about a different event, with `misstatement_policy_unresolved`
-until its Point 14 aggregation policy is agreed. Critical unknowns block PASS and
-remain INSUFFICIENT_EVIDENCE. No company-specific rules or public labels enter runtime.
+**A — Numerical misrepresentation.** Compare only the same company, subject,
+metric definition, asserted period, unit and comparator. Python uses the quoted
+reporting precision. A compatible wrong number is CONTRADICTED; an unknown or
+incompatible definition/period cannot become a contradiction. This records an
+accuracy finding, not intent or automatically EVASIVE. A material misleading
+statement could be read as evidence against openness; alternatively, an isolated
+error could coexist with candid reporting. This slice retains the finding and
+`misstatement_policy_unresolved` rather than choosing between those interpretations
+without evidence about its communication significance. Candid returns disclosure
+and an independent revenue contradiction can both survive.
+
+**B — Selective nondisclosure.** Prepare adverse-event candidates from measured
+changes independently of claims. A decline is not automatically material. MATERIAL
+requires a same-event, source-backed characterization of the relevant impact;
+IMMATERIAL also needs corroboration. Neither a percentage cutoff nor generic
+optimism establishes significance. The model interprets significance; Python checks
+same-event references, source qualifiers and certainty. Those checks prove grounding,
+not the semantic truth of the materiality interpretation.
+
+ACKNOWLEDGED retains each independently valid factual admission, even if another
+cited claim is a commitment, different metric or wrong period. Rejected known IDs
+and diagnostics remain visible; fabricated IDs still reject the proposal. A candid
+business-issue admission need not invent a numerical denominator. Its measured
+magnitude and explanatory cause remain separate: matching a direction/number does
+not verify source qualifiers. Pure causal, forecast and commitment propositions
+are not factual corroboration, and summaries label proposition-only support.
+
+NOT_FOUND is a search result within the named supplied quarter call, not proof of
+concealment. The existing omission FAIL rule requires a material adverse event,
+complete scoped coverage and established management knowledge. Coverage is limited
+to four named earnings calls and the measured financial/returns facts; missing calls,
+unknown dates, incomplete measurements and unextracted relevant wording remain
+limitations. The three-claim-per-call extraction is explicitly non-exhaustive.
+
+The available knowledge rule recognizes only a dated same-event acknowledgement;
+that acknowledgement also defeats NOT_FOUND. Therefore this calls-only slice has
+no independent basis to establish knowledge of an omitted event, and its omission
+FAIL path remains unreachable in normal validation. The diagnostic
+`omission_knowledge_policy_unresolved` exposes that limitation; neither database
+availability nor management's title supplies the missing premise. This is a chosen
+conservative evidence boundary, not a requirement to prove fraudulent intent.
+Critical unknowns about measurement, materiality, coverage or knowledge preserve
+INSUFFICIENT_EVIDENCE. Fully resolved candid disclosures can produce TRANSPARENT;
+only TRANSPARENT produces PASS. No public labels or company-specific rules enter
+runtime.
+
+Prepared event IDs are now enumerated in the per-company Pydantic schema and
+payload. Every prepared ID must occur exactly once; unknown, duplicate and missing
+IDs have distinct finite rejection codes. Fact periods never authorize invented
+events. The same single recovery remains available.
 
 ## Execution and evaluation
 
@@ -119,7 +158,7 @@ Labels are loaded only after decisions. Evaluation reports semantic abstentions,
 operational failures, grounded correctness and public fallback credit separately;
 legacy `failures` means all unresolved verdicts, including abstentions.
 
-Offline Option C validation after normalization repair: **87 tests, 86 passed and
+Offline Option C validation after semantic-reliability repair: **95 tests, 94 passed and
 one live smoke skipped**. Both archived first-gate responses are immutable hashed
 fixtures; replay now retains all 12 claims with unchanged IDs/quotes/spans on one
 mock invocation, preserving qualitative values as nonnumeric and distinguishing

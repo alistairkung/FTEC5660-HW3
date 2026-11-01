@@ -3,7 +3,7 @@ from dataclasses import asdict
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from .claim_evidence_matcher import evidence_facts, match_claim
 from .disclosure_rules import aggregate_findings, communication_coverage, prepare_events
@@ -44,9 +44,13 @@ do not calculate or invent measurements.
 The extracted claim list is bounded and NOT exhaustive. Review complete original calls for
 event discussion, but acknowledge only with supplied validated claim IDs. If relevant wording
 was not extracted, return INCONCLUSIVE; never create a new claim or infer silence from that gap.
+Return exactly one disclosure per prepared_event_ids entry, no duplicates and no other IDs.
+Fact IDs and reporting periods do not authorize additional events: never synthesize event IDs.
 For every independently prepared adverse-event CANDIDATE, distinguish ACKNOWLEDGED, NOT_FOUND
-in the supplied quarter call, and INCONCLUSIVE. A candidate or decline is not automatically
-material. Materiality remains UNKNOWN unless management explicitly characterizes the relevant
+in the supplied quarter call, and INCONCLUSIVE. A candidate or decline is not automatically material.
+For ACKNOWLEDGED cite independently relevant factual admissions, not adjacent commitments,
+causal explanations alone, or other metrics. A measured direction does not verify its cause.
+Materiality remains UNKNOWN unless management explicitly characterizes the relevant
 impact, supported by same-event claims and exact qualifiers. IMMATERIAL needs corroborated
 same-event evidence, not optimism or an untested 'low' criterion. Do not create a percentage
 threshold. ESTABLISHED knowledge needs same-event management acknowledgement by the dated call;
@@ -78,7 +82,11 @@ class TransparencyVerifier:
         matches_by_claim = {match.claim_id: match for match in matches}
         events = {event.evidence_id: event for event in prepare_events(facts)}
         event_ids = [candidate.event_id for candidate in proposal.disclosures]
-        if len(event_ids) != len(set(event_ids)) or set(event_ids) != set(events):
+        if set(event_ids) - set(events):
+            raise EvidenceError('unknown_event_reference')
+        if len(event_ids) != len(set(event_ids)):
+            raise EvidenceError('duplicate_event_reference')
+        if set(event_ids) != set(events):
             raise EvidenceError('incomplete_event_coverage')
         disclosures = []
         for candidate in proposal.disclosures:
@@ -104,8 +112,16 @@ class TransparencyVerifier:
             materiality_sources = references(candidate.materiality_claim_ids)
             knowledge_sources = references(candidate.knowledge_claim_ids)
             relation = candidate.relation
-            if relation == 'ACKNOWLEDGED' and (not cited or not all(acknowledges(c) for c in cited)):
-                relation = 'INCONCLUSIVE'
+            retained_ids = tuple(candidate.claim_ids)
+            rejected_ids = ()
+            diagnostics = ()
+            if relation == 'ACKNOWLEDGED':
+                retained_ids = tuple(c.evidence_id for c in cited if acknowledges(c))
+                rejected_ids = tuple(c.evidence_id for c in cited if not acknowledges(c))
+                if rejected_ids:
+                    diagnostics = ('non_acknowledging_reference',)
+                if not retained_ids:
+                    relation = 'INCONCLUSIVE'
             if relation == 'NOT_FOUND' and (cited or any(acknowledges(c) for c in claims)):
                 relation = 'INCONCLUSIVE'
             materiality = candidate.materiality
@@ -124,8 +140,9 @@ class TransparencyVerifier:
                     > (int(event.period[:4]), 3 * int(event.period[-1])) for c in knowledge_sources)
                 if not known:
                     knowledge = 'UNKNOWN'
-            disclosures.append(DisclosureFinding(event.evidence_id, relation, tuple(candidate.claim_ids),
-                materiality, knowledge, tuple(candidate.materiality_claim_ids), tuple(candidate.knowledge_claim_ids)))
+            disclosures.append(DisclosureFinding(event.evidence_id, relation, retained_ids,
+                materiality, knowledge, tuple(candidate.materiality_claim_ids), tuple(candidate.knowledge_claim_ids),
+                rejected_ids, diagnostics))
         coverage = communication_coverage(transcripts, measurements_complete=(len(financial.returns) == 10
             and all(row.rate_pct is not None for row in financial.returns)))
         return aggregate_findings(tuple(matches), tuple(disclosures), coverage)
@@ -135,21 +152,31 @@ class TransparencyVerifier:
         return {'facts': [asdict(fact) for fact in facts],
                 'claims': [asdict(claim) for claim in claims],
                 'event_candidates': [asdict(event) for event in prepare_events(facts)],
+                'prepared_event_ids': [event.evidence_id for event in prepare_events(facts)],
                 'coverage': asdict(communication_coverage(transcripts)),
                 'full_transcripts': [{'period': doc.period, 'document': doc.name, 'text': doc.source.raw}
                                      for doc in transcripts]}
 
     async def verify(self, financial: FinancialSnapshot, claims: tuple[ManagementClaim, ...],
                      transcripts=()) -> TransparencyDecision:
-        return await self.gateway.structured(VERIFICATION_PROMPT, self.payload(financial, claims, transcripts),
-            Verification, lambda proposal: self.validate(proposal, financial, claims, transcripts))
+        payload = self.payload(financial, claims, transcripts)
+        event_ids = tuple(payload['prepared_event_ids'])
+        # Keep the model's allowed IDs identical to Python's prepared evidence set.
+        disclosure_schema = create_model('PreparedDisclosure', __base__=DisclosureCandidate,
+            event_id=(Literal.__getitem__(event_ids), ...)) if event_ids else DisclosureCandidate
+        schema = create_model('PreparedVerification', __base__=Verification,
+            disclosures=(list[disclosure_schema], Field(max_length=32 if event_ids else 0)))
+        return await self.gateway.structured(VERIFICATION_PROMPT, payload,
+            schema, lambda proposal: self.validate(proposal, financial, claims, transcripts))
 
 
 def render_reason(decision: TransparencyDecision, financial: FinancialSnapshot,
                   claims: tuple[ManagementClaim, ...]) -> str:
     by_claim = {claim.evidence_id: claim for claim in claims}
     matches = sorted(decision.matches, key=lambda item: item.relation != 'CONTRADICTED')
-    findings = [f'{match.relation} {match.claim_id} / {match.fact_id}: '
+    findings = [f'{match.relation} proposition only ({match.reason}) '
+                f'{match.claim_id} / {match.fact_id}'
+                + ('; qualifiers unverified' if match.unverified_qualifiers else '') + ': '
                 f'"{by_claim[match.claim_id].quotation[:180]}"' for match in matches[:2]]
     reasons = ', '.join(decision.reasons) or 'scoped_disclosure_prerequisites_resolved'
     return f'Point 14 {decision.assessment} ({reasons}). ' + ' '.join(findings)

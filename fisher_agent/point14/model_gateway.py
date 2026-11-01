@@ -44,13 +44,18 @@ class ModelGateway:
             except (ValidationError, EvidenceError, TypeError) as exc:
                 # Only finite local codes enter repair instructions, never raw output.
                 allowed = {'incomplete_claim_matching', 'unknown_fact_reference',
-                           'incomplete_event_coverage', 'unknown_claim_reference',
+                           'incomplete_event_coverage', 'unknown_event_reference',
+                           'duplicate_event_reference', 'unknown_claim_reference',
                            'unsupported_numeric_value', 'unsupported_numeric_unit',
                            'non_numeric_numeric_value', 'unsupported_qualitative_text',
                            'unsupported_definition_quote', 'unsupported_assertion_span', 'unsupported_qualifier',
                            'incompatible_qualitative_numeric_value'}
                 code = str(exc) if isinstance(exc, EvidenceError) and str(exc) in allowed else (
                     'schema_mismatch' if isinstance(exc, ValidationError) else 'grounding_mismatch')
+                if isinstance(exc, ValidationError) and any(
+                    error['type'] == 'literal_error' and error['loc'][-1:] == ('event_id',)
+                    for error in exc.errors()):
+                    code = 'unknown_event_reference'
                 self.diagnostics.validation_rejections.append(code)
                 if attempt:
                     raise ModelOutputError('Invalid structured evidence after one recovery') from exc
@@ -63,5 +68,7 @@ class ModelGateway:
                     'Use qualitative_text for quoted descriptions and value_text only for a copied numeric token. '
                     'Do not combine a qualitative assertion with a numeric value. '
                     'Keep unsupported definitions unknown; never invent definition wording. '
+                    + ('Return every prepared_event_ids entry exactly once and no other event IDs. '
+                       if 'prepared_event_ids' in payload else '') +
                     'This is the only recovery.')))
         raise AssertionError('Unreachable')
