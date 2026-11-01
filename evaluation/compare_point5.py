@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from fisher_agent.contracts import MarginResult, MarginStrategy, SQLTool, StrategyError
+from fisher_agent.margin_records import MarginResult, MarginStrategy, SQLTool, StrategyError
 from fisher_agent.historical_margin_strategy import HistoricalMarginStrategy
 from fisher_agent.industry_margin_strategy import IndustryMarginStrategy
 from observability.tracing import Observation, Tracing

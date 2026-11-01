@@ -1,6 +1,6 @@
 import unittest
 
-from fisher_agent.contracts import MarginResult, MarginStrategy
+from fisher_agent.margin_records import MarginResult, MarginStrategy
 from fisher_agent.historical_margin_strategy import HistoricalMarginStrategy
 from fisher_agent.industry_margin_strategy import IndustryMarginStrategy
 from test_industry_margin_strategy import FakeSQL, annual

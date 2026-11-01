@@ -57,7 +57,7 @@ def load_env_file(path: Path = Path(".env")) -> None:
 
 # Choose any 3 of the 15 points, e.g. CHOSEN_POINTS = [1, 7, 15]. Your agent
 # gives a PASS or FAIL verdict on these 3 points only, with your own rule for each.
-CHOSEN_POINTS: list[int] = []  ### YOUR CODE HERE
+CHOSEN_POINTS: list[int] = [4, 5, 14]  # Point 14 pending: two-specialist integration milestone.
 
 
 def build_agent() -> Any:
@@ -71,8 +71,12 @@ def build_agent() -> Any:
     from .env. Each company has its own tools (see ``analyze_companies``), so
     you will probably create one tool-calling agent per company there.
     """
-    ### YOUR CODE HERE
-    return None
+    from fisher_agent.company_analyzer import CompanyAnalyzer
+    from fisher_agent.runtime import build_sales_specialist
+    from observability import current_tracing
+
+    tracing = current_tracing()
+    return CompanyAnalyzer(build_sales_specialist(tracing), tracing=tracing)
 
 
 async def analyze_companies(agent: Any, companies: dict[str, list[Any]]) -> dict[str, dict[str, Any]]:
@@ -108,9 +112,7 @@ async def analyze_companies(agent: Any, companies: dict[str, list[Any]]) -> dict
     entry for it: an exception here means no results.csv, which scores zero.
     You may analyse companies in parallel (e.g. ``asyncio.gather``).
     """
-    ### YOUR CODE HERE
-    _ = agent
-    return {name: {"points": {}, "summary": ""} for name in companies}
+    return await agent.analyze_companies(companies)
 
 
 # Everything below is provided runner/scoring code. No edits are needed.

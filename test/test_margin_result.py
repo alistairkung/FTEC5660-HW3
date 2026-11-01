@@ -1,7 +1,7 @@
 from decimal import Decimal
 import unittest
 
-from fisher_agent.contracts import AnnualMargin, MarginResult, SQLEvidence
+from fisher_agent.margin_records import AnnualMargin, MarginResult, SQLEvidence
 
 
 class MarginResultTests(unittest.TestCase):

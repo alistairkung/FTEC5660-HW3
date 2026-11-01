@@ -341,9 +341,8 @@ reported separately. Labels never reach runtime strategies or trace payloads.
 
 See [comparison findings](evaluation/point5_comparison.md) and
 [full evidence/results](evaluation/point5_results.json). Industry achieves 100%
-balanced accuracy; Historical achieves 52.38%. Industry is recommended for
-review on both assessment fit and public evidence; no winner is wired into
-`hw3.py`. Point 4, Point 14, `CHOSEN_POINTS` and the three-point runner are unchanged.
+balanced accuracy; Historical achieves 52.38%. The integration milestone below
+selects Industry for the runtime path and retains both strategies for comparison.
 
 Optional tracing uses the existing lifecycle and closes/flushes on completion:
 
@@ -365,7 +364,72 @@ for this experiment. Trace payloads are tested offline; live delivery is unverif
 
 ### Design
 
-The following Mermaid diagram captures the **planned first integrated iteration**. Points 4, 5 and 14 are separate specialist workflows that may execute concurrently. Point 5's strategies are alternatives: the evaluation compares both, but the final runner uses only the selected one. The diagram does not claim that the concurrent specialist branches have already been integrated.
+The current milestone integrates Points 4 and 5. Point 14 remains under development
+on its specialist branch and is not executed by the common runner.
+
+```mermaid
+flowchart TD
+    H["hw3.py: student wiring"] --> C["CompanyAnalyzer: at most 2 companies"]
+    C --> S["SalesSpecialist: customer first, bounded LLM workflow"]
+    C --> M["MarginRunner: at most 2 SQL workers, 10-second deadline"]
+    M --> I["IndustryMarginStrategy: deterministic Decimal calculation"]
+    S --> A["Explicit PointResult adapters"]
+    I --> A
+    A --> O["Evidence-backed summary and lecturer CSV"]
+    C -.-> P["Point 14 pending: missing in CSV"]
+```
+
+`contracts.py` owns only the shared result, provenance references and diagnostics.
+Interview assessments stay in `sales_records.py`; SQL evidence and margin records
+stay in `margin_records.py`. Original specialist records are retained for diagnostics.
+Completed results require a verdict and company-scoped provenance. Operational
+errors retain `verdict=None` internally; the public adapter emits an explicitly
+labelled FAIL fallback only for an unresolved implemented point.
+
+Each company has its own supplied tools and a 95-second deadline within a shared
+20-minute analysis budget. Queued companies receive explicit error entries if the
+batch budget expires; completed independent point results are preserved. Point 4 retains
+its existing 90-second deadline, 20-second model timeout, zero SDK retries and
+explicit non-thinking `deepseek-v4-flash` configuration. Point 5 runs independently
+of the event loop with a 10-second deadline including queue time. Python cannot
+kill a blocked thread: timed-out SQL workers retain their slots until they return,
+cannot start another query after cancellation, and cannot delay interpreter exit.
+A company failure preserves the other specialist's completed result.
+An indefinitely blocked SQL call may outlive its company trace; thread cancellation
+does not guarantee that its native tool observation closes before tracing shuts down.
+
+The lecturer requires exactly three chosen points. `CHOSEN_POINTS=[4,5,14]` records
+the intended final selection, but Point 14 stays missing with an explicit pending
+summary. **This is an integration milestone, not a submission-ready solution.**
+The unchanged normalizer writes `14:missing`; no placeholder verdict is fabricated.
+
+Run after installing `requirements.txt` and configuring `.env`:
+
+```bash
+python hw3.py --data-folder public_test
+python -m unittest discover -s test -v
+```
+
+For optional common company-level traces, install `requirements-observability.txt`
+and run `python -m observability.run --data-folder public_test`. Both specialist
+paths nest under `assess-company`; callbacks capture SQL, interviews, model usage
+and errors. Credentials are optional and tracing never determines verdicts.
+
+The development comparison below uses the same company orchestration, adapters
+and unchanged lecturer normalization/CSV functions. It reads labels after prediction,
+reports grounded accuracy separately from operational fallback credits, requires
+explicit paid-call opt-in and refuses to overwrite its JSON baseline:
+
+```bash
+python -m evaluation.combined --live --data-folder public_test --output .review/combined-full.json
+```
+
+Use repeatable `--company` arguments for a small gate. Generated JSON/CSV files
+are local artifacts. See [combined validation](evaluation/combined-results.md).
+
+The following original diagram remains the **future three-point design reference**;
+its Point 14 path is not implemented in this milestone. Point 5's Historical path
+is experimental only; Industry is selected in the runtime.
 
 ```mermaid
 flowchart TD
@@ -449,9 +513,9 @@ It uses the customer `sales_team` interview first, consults the competitor only
 after a valid UNCERTAIN assessment, then makes one final adjudication if needed.
 Quotes and source IDs are checked in Python. The model judges their meaning.
 
-This slice leaves `hw3.py` and `CHOSEN_POINTS` unchanged: the lecturer runner
-still requires three points. It does not implement the remaining points or a
-combined company summary. See [Point 4 design and limits](docs/point4.md).
+The standalone slice remains independently evaluable; the integration milestone
+above also wires it into the homework entry point alongside Point 5. Point 14
+remains pending. See [Point 4 design and limits](docs/point4.md).
 
 Run offline checks without credentials or services:
 
