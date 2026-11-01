@@ -2,5 +2,7 @@
 .env.*
 !.env.example
 .venv/
+.venv
+evaluation/point7-*.json
 __pycache__/
 results.csv
