@@ -170,11 +170,11 @@ for each public company. Grading uses a private set of about 20 unseen
 companies with the same tools and the same answer key rules, but different
 names and wording, and scores your 3 points only.
 
-## Homework 3 solution:
-> to students: this is your report, see the homework description.
+## Homework 3 solution
 
 ### My 3 points and rules
-> for each point: why you chose it, your PASS rule in one or two sentences, and the evidence it uses. Quote Fisher where it helps.
+
+I selected three complementary aspects of Fisher's framework: the quality of the sales organisation (Point 4), financial performance relative to industry peers (Point 5), and management's willingness to disclose setbacks (Point 14). This combination lets the agent use the different evidence sources available in the assignment—interviews, financial data, and earnings calls—while defining an explicit PASS rule for each point.
 
 | Point | Fisher criterion | Supplied evidence | PASS rule |
 | --- | --- | --- | --- |
@@ -183,7 +183,8 @@ names and wording, and scores your 3 points only.
 | **14** | Management discusses troubles openly | SQL: monthly shipments/returns; complete same-quarter earnings calls for detected anomalies | PASS if no quarterly return-rate anomalies occur, or every anomaly is acknowledged. An anomaly is a rate at least twice the pooled preceding-four-quarter rate; zero current and baseline returns means no anomaly. |
 
 ### Design
-> a visualization of your agent design and one paragraph describing it.
+
+The agent uses a modular, evidence-first design: `hw3.py` delegates construction to a bootstrap layer, while `CompanyAnalyzer` runs the three point-specific specialists for each company, with at most two companies in flight. Each specialist retrieves evidence exclusively through the lecturer-provided, company-scoped tools and returns a shared `PointResult` containing its verdict, execution status, provenance and diagnostics. The methods deliberately differ by question: Point 4 uses a bounded LLM interpretation of customer interviews, with a competitor follow-up when the validated assessment is uncertain; Point 5 calculates an industry-relative operating margin deterministically using SQL evidence and Python `Decimal`; and Point 14 first detects anomalous return rates in Python, then asks an LLM to assess acknowledgement in the corresponding complete earnings call only where necessary. Python validates the model's quotation, speaker and period before the company-level result is assembled. Langfuse optionally traces the evidence retrieval, model decisions and usage without being required for normal execution.
 
 ```mermaid
 flowchart TD
@@ -224,6 +225,10 @@ flowchart TD
     P --> CSV["Unchanged lecturer runner → results.csv"]
     C -.-> LF["Optional Langfuse: tools, models, decisions and usage"]
 ```
+
+### Design reflection — simplifying Point 14
+
+Point 14 was the hardest part to scope. My initial attempt tried to evaluate management transparency broadly by extracting claims, comparing them with financial performance and adjudicating whether management was candid. That design became increasingly elaborate, yet the evaluation remained unreliable: semantically unrelated facts were sometimes treated as contradictions, relevant metrics were missing, and repeated model-based repair did not resolve the underlying judgement problem. I used Langfuse traces to inspect where the pipeline failed rather than adding more reasoning stages or token budget. The eventual solution narrowed the claim to something the supplied evidence could support: whether management acknowledged objectively measured returns/quality setbacks in the relevant quarter's earnings call. A deterministic return-rate check now decides whether an LLM assessment is needed at all. This is a deliberately scoped interpretation of Fisher's Point 14, not a general-purpose test of management honesty; the simplification made the reasoning easier to audit and test.
 
 ### Results
 
